@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:title="@string/category_title_app">
+
+        <info.paveway.kidsalerm.dialog.EditDialogPreference
+            android:key="appPassword"
+            android:title="@string/app_password_title"
+            android:summary="@string/app_password_summary"
+            android:dialogTitle="@string/app_password_dialogtitle"
+            android:inputType="textPassword" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/category_title_mail">
+
+        <EditTextPreference
+            android:key="mailUserName"
+            android:title="@string/mail_user_name_title"
+            android:summary="@string/mail_user_name_summary"
+            android:dialogTitle="@string/mail_user_name_dialogtitle"
+            android:hint="user name" />
+
+        <EditTextPreference
+            android:key="mailPassword"
+            android:title="@string/mail_password_title"
+            android:summary="@string/mail_password_summary"
+            android:dialogTitle="@string/mail_password_dialogtitle"
+            android:inputType="textPassword" />
+
+        <PreferenceScreen
+            android:key="mailFrom"
+            android:title="送信元メールアドレス"
+            android:summary="送信元のGMAILアドレスを選択してください" >
+        </PreferenceScreen>
+
+        <PreferenceScreen
+            android:key="mailTo"
+            android:title="送信先メールアドレス"
+            android:summary="送信先のアドレスを選択してください" >
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/category_title_monitor">
+
+        <CheckBoxPreference
+            android:key="monitorPowerOn"
+            android:title="@string/monitor_power_on_title"
+            android:summary="@string/monitor_power_on_summary" />
+
+        <CheckBoxPreference
+            android:key="monitorPowerOff"
+            android:title="@string/monitor_power_off_title"
+            android:summary="@string/monitor_power_off_summary" />
+
+        <CheckBoxPreference
+            android:key="monitorStay"
+            android:title="@string/monitor_stay_title"
+            android:summary="@string/monitor_stay_summary" />
+
+        <EditTextPreference
+            android:key="monitorStayTime"
+            android:title="@string/monitor_stay_time_title"
+            android:summary="@string/monitor_stay_time_summary"
+            android:dialogTitle="@string/monitor_stay_time_dialogtitle"
+            android:dependency="monitorStay"
+            android:inputType="number"
+            android:maxLength="4" />
+
+        <PreferenceScreen
+            android:key="exclusionPlace"
+            android:title="@string/select_stay_exclusion_title"
+            android:summary="@string/select_stay_exclusion_summary"
+            android:dependency="monitorStay" >
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
+
+
