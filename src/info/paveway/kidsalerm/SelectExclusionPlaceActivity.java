@@ -1,13 +1,18 @@
 package info.paveway.kidsalerm;
 
 import info.paveway.kidsalerm.CommonConstants.PrefsKey;
+import info.paveway.kidsalerm.dialog.LoginDialog;
+import info.paveway.kidsalerm.dialog.RegistExclusionPlaceNameDialog;
+import info.paveway.kidsalerm.dialog.RegistExclusionPlaceNameDialog.OnRegistListener;
 import info.paveway.log.Logger;
 import info.paveway.util.StringUtil;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.content.DialogInterface;
@@ -15,6 +20,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.Toast;
 
@@ -41,7 +47,7 @@ import com.google.gson.reflect.TypeToken;
  * Copyright (C) 2014 paveway.info. All rights reserved.
  *
  */
-public class SelectExclusionPlaceActivity extends ActionBarActivity {
+public class SelectExclusionPlaceActivity extends ActionBarActivity implements OnRegistListener {
 
     /** ロガー */
     private Logger mLogger = new Logger(SelectExclusionPlaceActivity.class);
@@ -202,6 +208,43 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity {
         mLogger.d("OUT(OK)");
     }
 
+    /**
+     * 登録した時に呼び出される。
+     *
+     * @param exclusionPlaceName 除外場所名
+     * @param latitude 緯度
+     * @param longitude 経度
+     */
+    @Override
+    public void onRegist(String exclusionPlaceName, double latitude, double longitude) {
+        // 除外場所名がある場合
+        if (StringUtil.isNotNullOrEmpty(exclusionPlaceName)) {
+            // マーカーを生成する。
+            MarkerOptions options = new MarkerOptions();
+            options.position(new LatLng(latitude, longitude));
+            options.title(exclusionPlaceName);
+            Marker marker = mGoogleMap.addMarker(options);
+
+            // 除外場所マップにデータを追加する。
+            mExclusionPlaceDataMap.put(
+                    exclusionPlaceName,
+                    new ExclusionPlaceData(
+                            exclusionPlaceName,
+                            String.valueOf(marker.getPosition().latitude),
+                            String.valueOf(marker.getPosition().longitude)));
+
+            // 除外場所のJSONデータを生成する。
+            Gson gson = new Gson();
+            String json = gson.toJson(mExclusionPlaceDataMap);
+
+            // 除外場所データをプリフェレンスに保存する。
+            SharedPreferences prefs =
+                    PreferenceManager.getDefaultSharedPreferences(SelectExclusionPlaceActivity.this);
+            Editor editor = prefs.edit();
+            editor.putString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, json);
+            editor.commit();
+        }
+    }
 
     /**************************************************************************/
     /**
@@ -258,32 +301,18 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity {
         public void onMapClick(LatLng latlng) {
             mLogger.d("IN");
 
-            // マーカーを生成する。
-            MarkerOptions options = new MarkerOptions();
-            options.position(latlng);
-            // タイトルは一意にするため現在日時の値とする。
-            String title = String.valueOf(new Date().getTime());
-            options.title(title);
-            Marker marker = mGoogleMap.addMarker(options);
+            ArrayList<String> exclusionPlaceNameList = new ArrayList<String>();
+            Iterator<String> itr = mExclusionPlaceDataMap.keySet().iterator();
+            while (itr.hasNext()) {
+                exclusionPlaceNameList.add(itr.next());
+            }
 
-            // 除外場所マップにデータを追加する。
-            mExclusionPlaceDataMap.put(
-                    title,
-                    new ExclusionPlaceData(
-                            title,
-                            String.valueOf(marker.getPosition().latitude),
-                            String.valueOf(marker.getPosition().longitude)));
-
-            // 除外場所のJSONデータを生成する。
-            Gson gson = new Gson();
-            String json = gson.toJson(mExclusionPlaceDataMap);
-
-            // 除外場所データをプリフェレンスに保存する。
-            SharedPreferences prefs =
-                    PreferenceManager.getDefaultSharedPreferences(SelectExclusionPlaceActivity.this);
-            Editor editor = prefs.edit();
-            editor.putString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, json);
-            editor.commit();
+            // 除外場所名登録ダイアログを表示する。
+            FragmentManager manager = getSupportFragmentManager();
+            RegistExclusionPlaceNameDialog dialog =
+                    RegistExclusionPlaceNameDialog.newInstance(exclusionPlaceNameList, latlng.latitude, latlng.longitude);
+            dialog.setCancelable(false);
+            dialog.show(manager, dialog.getClass().getSimpleName());
 
             mLogger.d("OUT(OK)");
         }

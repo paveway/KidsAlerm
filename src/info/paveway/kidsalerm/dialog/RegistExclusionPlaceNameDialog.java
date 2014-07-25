@@ -1,9 +1,15 @@
 package info.paveway.kidsalerm.dialog;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import info.paveway.kidsalerm.R;
+import info.paveway.kidsalerm.SelectExclusionPlaceActivity;
 import info.paveway.log.Logger;
 import info.paveway.util.StringUtil;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -28,6 +34,18 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
     /** ロガー */
     private Logger mLogger = new Logger(RegistExclusionPlaceNameDialog.class);
 
+    /** 登録リスナー */
+    private OnRegistListener mListener;
+
+    /** 登録済み除外場所名 */
+    private List<String> mExclusionPlaceNameList;
+
+    /** 緯度 */
+    private double mLatitude;
+
+    /** 経度 */
+    private double mLongitude;
+
     /** 除外場所名入力 */
     private EditText mExclusionPlaceNameValue;
 
@@ -36,8 +54,13 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
      *
      * @return インスタンス
      */
-    public static RegistExclusionPlaceNameDialog newInstance() {
+    public static RegistExclusionPlaceNameDialog newInstance(ArrayList<String> exclusionPlaceNameList, double latitude, double longitude) {
         RegistExclusionPlaceNameDialog instance = new RegistExclusionPlaceNameDialog();
+        Bundle args = new Bundle();
+        args.putStringArrayList("exclusionPlaceNameList", exclusionPlaceNameList);
+        args.putDouble("latitude", latitude);
+        args.putDouble("longitude", longitude);
+        instance.setArguments(args);
         return instance;
     }
 
@@ -51,6 +74,10 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mLogger.d("IN");
+
+        mExclusionPlaceNameList = (ArrayList<String>)getArguments().getStringArrayList("exclusionPlaceNameList");
+        mLatitude  = (double)getArguments().getDouble("latitude");
+        mLongitude = (double)getArguments().getDouble("longitude");
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View rootView = inflater.inflate(R.layout.dialog_regist_exclusion_place_name, null);
@@ -95,6 +122,25 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
     }
 
     /**
+     * アタッチする時に呼び出される。
+     *
+     * @param activity アクティビティ
+     */
+    @Override
+    public void onAttach(Activity activity) {
+        mLogger.d("IN");
+
+        try {
+            // リスナーを設定する。
+            mListener = (SelectExclusionPlaceActivity)activity;
+        } catch (Exception e) {
+            mLogger.e(e);
+        }
+
+        mLogger.d("OUT(OK)");
+    }
+
+    /**
      * 登録ボタンの処理を行う。
      */
     private void doRegistButton() {
@@ -106,10 +152,21 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
         // 未入力の場合
         if (StringUtil.isNullOrEmpty(exclusionPlaceName)) {
             // エラーメッセージを表示する。
-            toast(R.string.login_dialog_error_input_password);
+            toast("未入力です");
             mLogger.w("OUT(NG)");
             return;
         }
+
+        // 登録済みの名前の場合
+        if (mExclusionPlaceNameList.contains(exclusionPlaceName)) {
+            // エラーメッセージを表示する。
+            toast("登録済みです");
+            mLogger.w("OUT(NG)");
+            return;
+        }
+
+        // 登録を通知する。
+        mListener.onRegist(exclusionPlaceName, mLatitude, mLongitude);
 
         mLogger.d("OUT(OK)");
     }
@@ -123,9 +180,26 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
         // ダイアログを終了する。
         dismiss();
 
-        // 呼び出し元画面を終了する。
-        getActivity().finish();
+        // 登録を通知する。
+        mListener.onRegist("", mLatitude, mLongitude);
 
         mLogger.d("OUT(OK)");
+    }
+
+    /**************************************************************************/
+    /**
+     * 登録リスナークラス
+     *
+     */
+    public interface OnRegistListener {
+
+        /**
+         * 登録した時に呼び出される。
+         *
+         * @param exclusionPlaceName 除外場所名
+         * @param latitude 緯度
+         * @param longitude 経度
+         */
+        void onRegist(String exclusionPlaceName, double latitude, double longitude);
     }
 }

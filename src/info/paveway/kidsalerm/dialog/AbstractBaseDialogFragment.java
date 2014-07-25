@@ -15,6 +15,11 @@ import android.widget.Toast;
  */
 public abstract class AbstractBaseDialogFragment extends DialogFragment {
 
+    protected void toast(String text) {
+        Activity activity = getActivity();
+        Toast.makeText(activity, text, Toast.LENGTH_SHORT).show();
+    }
+
     /**
      * トースト表示する。
      *
