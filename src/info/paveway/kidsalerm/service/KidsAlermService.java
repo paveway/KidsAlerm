@@ -1,16 +1,17 @@
 package info.paveway.kidsalerm.service;
 
+import info.paveway.kidsalerm.CommonConstants.Action;
+import info.paveway.kidsalerm.CommonConstants.ExtraKey;
+import info.paveway.kidsalerm.CommonConstants.PrefsKey;
+import info.paveway.kidsalerm.ExclusionPlaceData;
+import info.paveway.log.Logger;
+import info.paveway.util.MonitorUtil;
+import info.paveway.util.StringUtil;
+
 import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.Map;
 
-import info.paveway.kidsalerm.ExclusionPlaceData;
-import info.paveway.kidsalerm.CommonConstants.Action;
-import info.paveway.kidsalerm.CommonConstants.ExtraKey;
-import info.paveway.kidsalerm.CommonConstants.PrefsKey;
-import info.paveway.log.Logger;
-import info.paveway.util.MonitorUtil;
-import info.paveway.util.StringUtil;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -322,6 +323,7 @@ public class KidsAlermService extends Service {
                 // 滞在監視除外場所のデータを取得する。
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(KidsAlermService.this);
                 String json = prefs.getString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, "");
+                mLogger.d("ExclusionPlaceData(JSON)=[" + json + "]");
 
                 // 滞在監視除外場所のデータがある場合
                 boolean check = true;

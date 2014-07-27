@@ -51,6 +51,21 @@ public class CommonConstants {
 
         /** ロケーション更新間隔 */
         public static final String LOCATION_INTERVAL = "locationInterval";
+
+        /** ズーム */
+        public static final String ZOOM = "zoom";
+
+        /** チルト */
+        public static final String TILT = "tilt";
+
+        /** ベアリング */
+        public static final String BEARING = "bearing";
+
+        /** 緯度 */
+        public static final String LATITUDE = "latitude";
+
+        /** 経度 */
+        public static final String LONGITUDE = "longitude";
     }
 
     /**
@@ -91,11 +106,17 @@ public class CommonConstants {
      *
      */
     public class ExtraKey {
+        /** タイトル */
+        public static final String TITLE = "title";
+
         /** 緯度 */
         public static final String LATITUDE = "latitude";
 
         /** 経度 */
         public static final String LONGITUDE = "longitude";
+
+        /** 登録済み除外場所名リスト */
+        public static final String EXCLUSION_PLACE_NAME_LIST = "exclusionPlaceNameList";
     }
 
     /**
@@ -123,5 +144,26 @@ public class CommonConstants {
     public class Encoding {
         /** UTF-8 */
         public static final String UTF_8 = "utf-8";
+    }
+
+    /**
+     * 位置情報
+     *
+     */
+    public class LocationInfo {
+        /** ズームデフォルト値 */
+        public static final float DEFAULT_ZOOM = 15;
+
+        /** チルトデフォルト値 */
+        public static final float DEFAULT_TILT = 0;
+
+        /** ベアリングデフォルト値 */
+        public static final float DEFAULT_BEARING = 0;
+
+        /** 緯度デフォルト値(東京駅) */
+        public static final String DEFAULT_LATITUDE  = "35.681376";
+
+        /** 経度デフォルト値(東京駅) */
+        public static final String DEFAULT_LONGITUDE = "139.766013";
     }
 }

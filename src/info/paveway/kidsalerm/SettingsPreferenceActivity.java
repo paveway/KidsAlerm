@@ -143,7 +143,7 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
         mMailTo.setOnPreferenceClickListener(new MailToOnPreferenceClickListener());
         mExclusionPlace.setOnPreferenceClickListener(new ExclusionPlaceOnPreferenceClickListener());
 
-        // ビューの可否を設定する。
+        // ビューの表示可否を設定する。
         enableViews();
 
         mLogger.d("OUT(OK)");
@@ -170,24 +170,46 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
                     String emailAddress = getEmailAddressFrom(data.getData());
                     // メールアドレスが取得できた場合
                     if (StringUtil.isNotNullOrEmpty(emailAddress)) {
+                        // メールアドレスを保存する。
                         Editor editor = mPrefs.edit();
                         editor.putString(PrefsKey.MAIL_FROM, emailAddress);
                         editor.commit();
                         mMailFrom.setSummary(emailAddress);
                         mLogger.d("OUT(OK)");
                         return;
+
+                    // メールアドレスが取得できない場合
                     } else {
                         Toast.makeText(this, "GMailアドレスではありません", Toast.LENGTH_SHORT).show();
+                        mLogger.d("OUT(NG)");
+                        return;
                     }
+
+                // データがない場合
+                } else {
+                    // 終了する。
+                    mLogger.d("OUT(NG)");
+                    return;
                 }
+
+            // 正常終了ではない場合
+            } else {
+                // 終了する。
+                mLogger.d("OUT(NG)");
+                return;
             }
 
         // 送信先メールアドレス選択の場合
         } else if (RequestCode.PICK_CONTACT_TO == requestCode) {
+            // 正常終了の場合
             if (RESULT_OK == resultCode) {
+                // データがある場合
                 if (null != data) {
+                    // メールアドレスを取得する。
                     String emailAddress = getEmailAddressTo(data.getData());
+                    // メールアドレスが取得できた場合
                     if (StringUtil.isNotNullOrEmpty(emailAddress)) {
+                        // メールアドレスを保存する。
                         Editor editor = mPrefs.edit();
                         editor.putString(PrefsKey.MAIL_TO, emailAddress);
                         editor.commit();
@@ -195,48 +217,74 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
                         mLogger.d("OUT(OK)");
                         return;
                     }
+
+                // データがない場合
+                } else {
+                    // 終了する。
+                    mLogger.d("OUT(NG)");
+                    return;
                 }
+
+            // 正常終了ではない場合
+            } else {
+                // 終了する。
+                mLogger.d("OUT(NG)");
+                return;
             }
-
-        // 滞在監視除外選択画面の場合
-        } else if (RequestCode.EXCLUSION_PLACE == requestCode) {
-
         }
 
-        // スーパークラスのメソッドを呼び出す。
         mLogger.d("OUT(OK)");
     }
 
     /**
-     * ビューを有効にする。
+     * ビューの表示可否を設定する。
      */
     public void enableViews() {
         mLogger.d("IN");
 
         // アプリケーションパスワードを取得する。
-        boolean enabled = false;
+        boolean mailEnabled = false;
+        boolean etcEnabled  = false;
         String appPassword = mPrefs.getString(PrefsKey.APP_PASSWORD, "");
 
         // アプリケーションパスワードが取得できた場合
         if (StringUtil.isNotNullOrEmpty(appPassword)) {
             mAppPassword.setSummary("設定済み：●●●●●");
-            enabled = true;
+            // メール設定を表示可とする。
+            mailEnabled = true;
+
+            // メール設定を取得する。
+            String mailUserName = mPrefs.getString(PrefsKey.MAIL_USER_NAME, "");
+            String mailPassword = mPrefs.getString(PrefsKey.MAIL_PASSWORD,  "");
+            String mailFrom     = mPrefs.getString(PrefsKey.MAIL_FROM,      "");
+            String mailTo       = mPrefs.getString(PrefsKey.MAIL_TO,        "");
+
+            //メール設定が全て設定済みの場合
+            if (StringUtil.isNotNullOrEmpty(mailUserName) &&
+                StringUtil.isNotNullOrEmpty(mailPassword) &&
+                StringUtil.isNotNullOrEmpty(mailFrom    ) &&
+                StringUtil.isNotNullOrEmpty(mailTo      )) {
+                // その他の設定を表示可とする。
+                etcEnabled = true;
+            }
 
         // アプリケーションパスワードが取得できない場合
         } else {
             mAppPassword.setSummary("アプリケーションのパスワードを入力してください");
         }
 
-        // 各項目の可否を設定する。
-        mMailUserName.setEnabled(enabled);
-        mMailPassword.setEnabled(enabled);
-        mMailFrom.setEnabled(enabled);
-        mMailTo.setEnabled(enabled);
-        mMonitorPowerOn.setEnabled(enabled);
-        mMonitorPowerOff.setEnabled(enabled);
-        mMonitorStay.setEnabled(enabled);
-        mMonitorStayTime.setEnabled(enabled);
-        mExclusionPlace.setEnabled(enabled);
+        // メール設定の表示可否を設定する。
+        mMailUserName.setEnabled(mailEnabled);
+        mMailPassword.setEnabled(mailEnabled);
+        mMailFrom.setEnabled(mailEnabled);
+        mMailTo.setEnabled(mailEnabled);
+
+        // その他の設定の表示可否を設定する。
+        mMonitorPowerOn.setEnabled(etcEnabled);
+        mMonitorPowerOff.setEnabled(etcEnabled);
+        mMonitorStay.setEnabled(etcEnabled);
+        mMonitorStayTime.setEnabled(etcEnabled);
+        mExclusionPlace.setEnabled(etcEnabled);
 
         mLogger.d("OUT(OK)");
     }

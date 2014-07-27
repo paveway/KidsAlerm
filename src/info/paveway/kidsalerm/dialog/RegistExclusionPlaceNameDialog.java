@@ -1,13 +1,14 @@
 package info.paveway.kidsalerm.dialog;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import info.paveway.kidsalerm.CommonConstants.ExtraKey;
 import info.paveway.kidsalerm.R;
 import info.paveway.kidsalerm.SelectExclusionPlaceActivity;
 import info.paveway.log.Logger;
 import info.paveway.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -52,15 +53,22 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
     /**
      * インスタンスを返却する。
      *
+     * @param exclusionPlaceNameList 登録済み除外場所名リスト
+     * @param latitude 緯度
+     * @param longitutde 経度
      * @return インスタンス
      */
     public static RegistExclusionPlaceNameDialog newInstance(ArrayList<String> exclusionPlaceNameList, double latitude, double longitude) {
+        // インスタンスを生成する。
         RegistExclusionPlaceNameDialog instance = new RegistExclusionPlaceNameDialog();
+
+        // 引数を設定する。
         Bundle args = new Bundle();
-        args.putStringArrayList("exclusionPlaceNameList", exclusionPlaceNameList);
-        args.putDouble("latitude", latitude);
-        args.putDouble("longitude", longitude);
+        args.putStringArrayList(ExtraKey.EXCLUSION_PLACE_NAME_LIST, exclusionPlaceNameList);
+        args.putDouble(ExtraKey.LATITUDE, latitude);
+        args.putDouble(ExtraKey.LONGITUDE, longitude);
         instance.setArguments(args);
+
         return instance;
     }
 
@@ -75,9 +83,10 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mLogger.d("IN");
 
-        mExclusionPlaceNameList = (ArrayList<String>)getArguments().getStringArrayList("exclusionPlaceNameList");
-        mLatitude  = (double)getArguments().getDouble("latitude");
-        mLongitude = (double)getArguments().getDouble("longitude");
+        // 引数を取得する。
+        mExclusionPlaceNameList = (ArrayList<String>)getArguments().getStringArrayList(ExtraKey.EXCLUSION_PLACE_NAME_LIST);
+        mLatitude               = (double)getArguments().getDouble(ExtraKey.LATITUDE);
+        mLongitude              = (double)getArguments().getDouble(ExtraKey.LONGITUDE);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View rootView = inflater.inflate(R.layout.dialog_regist_exclusion_place_name, null);
@@ -130,6 +139,9 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
     public void onAttach(Activity activity) {
         mLogger.d("IN");
 
+        // スーパークラスのメソッドを呼び出す。
+        super.onAttach(activity);
+
         try {
             // リスナーを設定する。
             mListener = (SelectExclusionPlaceActivity)activity;
@@ -168,6 +180,9 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
         // 登録を通知する。
         mListener.onRegist(exclusionPlaceName, mLatitude, mLongitude);
 
+        // ダイアログを終了する。
+        dismiss();
+
         mLogger.d("OUT(OK)");
     }
 
@@ -179,9 +194,6 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
 
         // ダイアログを終了する。
         dismiss();
-
-        // 登録を通知する。
-        mListener.onRegist("", mLatitude, mLongitude);
 
         mLogger.d("OUT(OK)");
     }

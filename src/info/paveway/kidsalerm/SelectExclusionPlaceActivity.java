@@ -1,7 +1,9 @@
 package info.paveway.kidsalerm;
 
+import info.paveway.kidsalerm.CommonConstants.LocationInfo;
 import info.paveway.kidsalerm.CommonConstants.PrefsKey;
-import info.paveway.kidsalerm.dialog.LoginDialog;
+import info.paveway.kidsalerm.dialog.DeleteExclusionPlaceDialog.OnDeleteListener;
+import info.paveway.kidsalerm.dialog.DetailExclusionPlaceDialog;
 import info.paveway.kidsalerm.dialog.RegistExclusionPlaceNameDialog;
 import info.paveway.kidsalerm.dialog.RegistExclusionPlaceNameDialog.OnRegistListener;
 import info.paveway.log.Logger;
@@ -9,10 +11,8 @@ import info.paveway.util.StringUtil;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import android.content.DialogInterface;
@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
@@ -47,16 +48,25 @@ import com.google.gson.reflect.TypeToken;
  * Copyright (C) 2014 paveway.info. All rights reserved.
  *
  */
-public class SelectExclusionPlaceActivity extends ActionBarActivity implements OnRegistListener {
+public class SelectExclusionPlaceActivity extends ActionBarActivity implements OnRegistListener, OnDeleteListener {
 
     /** ロガー */
     private Logger mLogger = new Logger(SelectExclusionPlaceActivity.class);
 
+    /** プリフェレンス */
+    private SharedPreferences mPrefs;
+
     /** Googleマップ */
     private GoogleMap mGoogleMap;
 
+    /** カメラポジション */
+    private CameraPosition mCameraPosition;
+
     /** 除外場所データマップ */
     private Map<String, ExclusionPlaceData> mExclusionPlaceDataMap;
+
+    /** マーカー */
+    private Marker mDeleteMarker;
 
     /**
      * 生成した時に呼び出される。
@@ -71,6 +81,9 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
 
         // レイアウトを設定する。
         setContentView(R.layout.activity_map);
+
+        // プリフェレンスを取得する。
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(SelectExclusionPlaceActivity.this);
 
         // Google Play servicesが利用できるかチェックする。
         int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -162,9 +175,18 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
         // マーカークリックリスナーを設定する。
         mGoogleMap.setOnMarkerClickListener(new MapOnMarkerClickListener());
 
+        // カメラポジションの初期値を設定する。
+        float zoom       = mPrefs.getFloat(PrefsKey.ZOOM,    LocationInfo.DEFAULT_ZOOM);
+        float tilt       = mPrefs.getFloat(PrefsKey.TILT,    LocationInfo.DEFAULT_TILT);
+        float bearing    = mPrefs.getFloat(PrefsKey.BEARING, LocationInfo.DEFAULT_BEARING);
+        double latitude  = Double.parseDouble(mPrefs.getString(PrefsKey.LATITUDE,  LocationInfo.DEFAULT_LATITUDE));
+        double longitude = Double.parseDouble(mPrefs.getString(PrefsKey.LONGITUDE, LocationInfo.DEFAULT_LONGITUDE));
+        CameraPosition cameraPosition = new CameraPosition(new LatLng(latitude, longitude), zoom, tilt, bearing);
+        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
         // 除外場所のデータを取得する。
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SelectExclusionPlaceActivity.this);
-        String json = prefs.getString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, "");
+        String json = mPrefs.getString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, "");
+        mLogger.d("ExclusionPlaceData(JSON)=[" + json + "]");
 
         // 除外場所のデータがある場合
         if (StringUtil.isNotNullOrEmpty(json)) {
@@ -197,6 +219,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
     private void setMarker(ExclusionPlaceData data) {
         mLogger.d("IN");
 
+        // マーカーを生成する。
         MarkerOptions options = new MarkerOptions();
         options.position(
                 new LatLng(
@@ -209,7 +232,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
     }
 
     /**
-     * 登録した時に呼び出される。
+     * 除外場所名を登録した時に呼び出される。
      *
      * @param exclusionPlaceName 除外場所名
      * @param latitude 緯度
@@ -217,6 +240,8 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
      */
     @Override
     public void onRegist(String exclusionPlaceName, double latitude, double longitude) {
+        mLogger.d("IN exclusionPlaceName=[" + exclusionPlaceName + "] latitude=[" + latitude + "] longitude=[" + longitude + "]");
+
         // 除外場所名がある場合
         if (StringUtil.isNotNullOrEmpty(exclusionPlaceName)) {
             // マーカーを生成する。
@@ -236,6 +261,37 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
             // 除外場所のJSONデータを生成する。
             Gson gson = new Gson();
             String json = gson.toJson(mExclusionPlaceDataMap);
+            mLogger.d("ExclusionPlaceData(JSON)=[" + json + "]");
+
+            // 除外場所データをプリフェレンスに保存する。
+            Editor editor = mPrefs.edit();
+            editor.putString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, json);
+            editor.commit();
+        }
+
+        mLogger.d("OUT(OK)");
+    }
+
+    @Override
+    public void onDelete() {
+
+        String title = mDeleteMarker.getTitle();
+
+        // 除外場所マップから対象のデータを取得する。
+        ExclusionPlaceData data = mExclusionPlaceDataMap.get(title);
+
+        // データがある場合
+        if (null != data) {
+            // マーカーを削除する。
+            mDeleteMarker.remove();
+
+            // 除外場所マップから削除する。
+            mExclusionPlaceDataMap.remove(title);
+
+            // 除外場所のJSONデータを生成する。
+            Gson gson = new Gson();
+            String json = gson.toJson(mExclusionPlaceDataMap);
+            mLogger.d("ExclusionPlaceData(JSON)=[" + json + "]");
 
             // 除外場所データをプリフェレンスに保存する。
             SharedPreferences prefs =
@@ -244,6 +300,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
             editor.putString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, json);
             editor.commit();
         }
+
     }
 
     /**************************************************************************/
@@ -265,18 +322,20 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
         public void onCameraChange(CameraPosition cameraPosition) {
             mLogger.d("IN bearing=[" + cameraPosition.bearing + "] tilt=[" + cameraPosition.tilt + "] zoom=[" + cameraPosition.zoom + "]");
 
-//            // カメラポジションを保存する。
-//            mCameraPosition = cameraPosition;
-//
-//            // 次回起動時用に保存する。
-//            Editor editor = mPrefs.edit();
-//            editor.putFloat(PrefsKey.ZOOM,    mCameraPosition.zoom);
-//            editor.putFloat(PrefsKey.TILT,    mCameraPosition.tilt);
-//            editor.putFloat(PrefsKey.BEARING, mCameraPosition.bearing);
-//            editor.commit();
-//
-//            // カメラポジションを再設定する。
-//            mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition));
+            // カメラポジションを保存する。
+            mCameraPosition = cameraPosition;
+
+            // 次回起動時用に保存する。
+            Editor editor = mPrefs.edit();
+            editor.putFloat( PrefsKey.ZOOM,      mCameraPosition.zoom);
+            editor.putFloat( PrefsKey.TILT,      mCameraPosition.tilt);
+            editor.putFloat( PrefsKey.BEARING,   mCameraPosition.bearing);
+            editor.putString(PrefsKey.LATITUDE,  String.valueOf(mCameraPosition.target.latitude));
+            editor.putString(PrefsKey.LONGITUDE, String.valueOf(mCameraPosition.target.longitude));
+            editor.commit();
+
+            // カメラポジションを再設定する。
+            mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition));
 
             mLogger.d("OUT(OK)");
         }
@@ -337,31 +396,14 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
         public boolean onMarkerClick(Marker marker) {
             mLogger.d("IN");
 
-            // マーカーのタイトルを取得する。
-            String title = marker.getTitle();
+            mDeleteMarker = marker;
 
-            // 除外場所マップから対象のデータを取得する。
-            ExclusionPlaceData data = mExclusionPlaceDataMap.get(title);
-
-            // データがある場合
-            if (null != data) {
-                // マーカーを削除する。
-                marker.remove();
-
-                // 除外場所マップから削除する。
-                mExclusionPlaceDataMap.remove(title);
-
-                // 除外場所のJSONデータを生成する。
-                Gson gson = new Gson();
-                String json = gson.toJson(mExclusionPlaceDataMap);
-
-                // 除外場所データをプリフェレンスに保存する。
-                SharedPreferences prefs =
-                        PreferenceManager.getDefaultSharedPreferences(SelectExclusionPlaceActivity.this);
-                Editor editor = prefs.edit();
-                editor.putString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, json);
-                editor.commit();
-            }
+            // 除外場所詳細ダイアログを表示する。
+            FragmentManager manager = getSupportFragmentManager();
+            DetailExclusionPlaceDialog dialog =
+                    DetailExclusionPlaceDialog.newInstance(marker);
+            dialog.setCancelable(false);
+            dialog.show(manager, dialog.getClass().getSimpleName());
 
             mLogger.d("OUT(OK)");
             return false;

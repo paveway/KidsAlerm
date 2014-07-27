@@ -17,14 +17,14 @@
     <PreferenceCategory
         android:title="@string/category_title_mail">
 
-        <EditTextPreference
+        <info.paveway.kidsalerm.dialog.EditDialogPreference
             android:key="mailUserName"
             android:title="@string/mail_user_name_title"
             android:summary="@string/mail_user_name_summary"
             android:dialogTitle="@string/mail_user_name_dialogtitle"
             android:hint="user name" />
 
-        <EditTextPreference
+        <info.paveway.kidsalerm.dialog.EditDialogPreference
             android:key="mailPassword"
             android:title="@string/mail_password_title"
             android:summary="@string/mail_password_summary"
@@ -68,9 +68,12 @@
             android:title="@string/monitor_stay_time_title"
             android:summary="@string/monitor_stay_time_summary"
             android:dialogTitle="@string/monitor_stay_time_dialogtitle"
+            android:dialogMessage="@string/monitor_stay_time_summary"
             android:dependency="monitorStay"
             android:inputType="number"
-            android:maxLength="4" />
+            android:maxLength="4"
+            android:text="120"
+            android:hint="0～1440" />
 
         <PreferenceScreen
             android:key="exclusionPlace"

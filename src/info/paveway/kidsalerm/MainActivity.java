@@ -30,6 +30,7 @@ public class MainActivity extends ActionBarActivity {
     /** プリフェレンス */
     private SharedPreferences mPrefs;
 
+    /** 開始ダイアログ */
     private StartupDialog mStartupDialog;
 
     /**
@@ -56,6 +57,9 @@ public class MainActivity extends ActionBarActivity {
         mLogger.d("OUT(OK)");
     }
 
+    /**
+     * 終了する時に呼び出される。
+     */
     @Override
     public void onDestroy() {
         mLogger.d("IN");
@@ -84,6 +88,7 @@ public class MainActivity extends ActionBarActivity {
 
         // 上記以外
         } else {
+            // 開始ダイアログのメソッドを呼び出す。
             mStartupDialog.onActivityResult(requestCode, resultCode, data);
         }
 
