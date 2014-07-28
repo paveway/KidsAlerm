@@ -59,7 +59,7 @@ public class EditDialogPreference extends DialogPreference {
         mLogger.d("IN");
 
         mInputValue = new EditText(getContext());
-        mInputValue.setInputType(InputType.TYPE_CLASS_TEXT  | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        mInputValue.setInputType(getInputType());
         mInputValue.setText(getPersistedString("default"));
 
         mLogger.d("OUT(OK)");
@@ -88,5 +88,14 @@ public class EditDialogPreference extends DialogPreference {
         super.onDialogClosed(positiveResult);
 
         mLogger.d("OUT(OK)");
+    }
+
+    /**
+     * 入力タイプを返却する。
+     *
+     * @return 入力タイプ
+     */
+    protected int getInputType() {
+        return InputType.TYPE_CLASS_TEXT  | InputType.TYPE_TEXT_VARIATION_NORMAL;
     }
 }

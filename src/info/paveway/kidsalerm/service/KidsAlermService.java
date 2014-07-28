@@ -56,7 +56,7 @@ public class KidsAlermService extends Service {
     /** カウントダウンタイマーインターバル(5分) */
     private static final long COUNT_DOWN_INTERVAL = 5 * MINUTE;
 
-    /** 滞在監視時間(分) */
+    /** 滞在通知時間(分) */
     private static final String DEFAULT_STAY_TIME = "60";
 
     /** 距離の小数点以下桁数(2桁) */
@@ -74,7 +74,7 @@ public class KidsAlermService extends Service {
     /** ロケーションリスナー */
     private LocationListener mLocationListener;
 
-    /** 滞在監視カウントダウンタイマー */
+    /** 滞在通知カウントダウンタイマー */
     private StayCountDownTimer mStayCountDownTimer;
 
     /** 前回ロケーション */
@@ -123,6 +123,8 @@ public class KidsAlermService extends Service {
         // 接続する。
         mLocationClient.connect();
 
+
+
         mLogger.d("OUT(OK)");
     }
 
@@ -133,7 +135,7 @@ public class KidsAlermService extends Service {
     public void onDestroy() {
         mLogger.d("IN");
 
-        // 滞在監視カウントダウンタイマーを停止する。
+        // 滞在通知カウントダウンタイマーを停止する。
         stopStayCountDownTimer();
 
         // ロケーションクライアントが有効な場合
@@ -146,17 +148,17 @@ public class KidsAlermService extends Service {
     }
 
     /**
-     * 滞在監視カウントダウンタイマーを再開始する。
+     * 滞在通知カウントダウンタイマーを再開始する。
      */
     private void restartStayCountDownTimer() {
         mLogger.d("IN");
 
-        // 滞在監視カウントダウンタイマーを停止する。
+        // 滞在通知カウントダウンタイマーを停止する。
         stopStayCountDownTimer();
 
-        // 滞在監視時間を取得する。
+        // 滞在通知時間を取得する。
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        long stayTime = Long.parseLong(prefs.getString(PrefsKey.MONITOR_STAY_TIME, DEFAULT_STAY_TIME));
+        long stayTime = Long.parseLong(prefs.getString(PrefsKey.NOTICE_STAY_TIME, DEFAULT_STAY_TIME));
 
         // カウントダウンタイマーを開始する。
         mStayCountDownTimer = new StayCountDownTimer(stayTime * MINUTE, COUNT_DOWN_INTERVAL);
@@ -166,7 +168,7 @@ public class KidsAlermService extends Service {
     }
 
     /**
-     * 滞在監視カウントダウンタイマーを停止する。
+     * 滞在通知カウントダウンタイマーを停止する。
      */
     private void stopStayCountDownTimer() {
         mLogger.d("IN");
@@ -203,7 +205,7 @@ public class KidsAlermService extends Service {
             // ロケーション更新を開始する。
             startLocationUpdates();
 
-            // 滞在監視カウントダウンタイマーを開始する。
+            // 滞在通知カウントダウンタイマーを開始する。
             restartStayCountDownTimer();
 
             mLogger.d("OUT(OK)");
@@ -216,7 +218,7 @@ public class KidsAlermService extends Service {
         public void onDisconnected() {
             mLogger.d("IN");
 
-            // 滞在監視カウントダウンタイマーを停止する。
+            // 滞在通知カウントダウンタイマーを停止する。
             stopStayCountDownTimer();
 
             // ロケーション更新を停止する。
@@ -320,23 +322,23 @@ public class KidsAlermService extends Service {
 
             // 前回ロケーションが設定済みの場合
             } else {
-                // 滞在監視除外場所のデータを取得する。
+                // 滞在通知除外場所のデータを取得する。
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(KidsAlermService.this);
                 String json = prefs.getString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, "");
                 mLogger.d("ExclusionPlaceData(JSON)=[" + json + "]");
 
-                // 滞在監視除外場所のデータがある場合
+                // 滞在通知除外場所のデータがある場合
                 boolean check = true;
                 if (StringUtil.isNotNullOrEmpty(json)) {
-                    // 滞在監視除外場所マップを取得する。
+                    // 滞在通知除外場所マップを取得する。
                     Gson gson = new Gson();
                     Type mapType = new TypeToken<Map<String, ExclusionPlaceData>>(){}.getType();
                     Map<String, ExclusionPlaceData> stayExclusionDataMap = gson.fromJson(json, mapType);
 
-                    // 滞在監視除外場所データ数分繰り返す。
+                    // 滞在通知除外場所データ数分繰り返す。
                     Iterator<String> itr = stayExclusionDataMap.keySet().iterator();
                     while (itr.hasNext()) {
-                        // 滞在監視除外場所からの距離を取得する。
+                        // 滞在通知除外場所からの距離を取得する。
                         ExclusionPlaceData data = stayExclusionDataMap.get(itr.next());
                         double distance =
                                 MonitorUtil.getDistance(
@@ -345,12 +347,12 @@ public class KidsAlermService extends Service {
                                         DISTANCE_DIGIT);
                         mLogger.d("distance=[" + distance + "]");
 
-                        // 滞在監視除外場所の場合
+                        // 滞在通知除外場所の場合
                         if (DISTANCE_IGNORE > distance) {
-                            // 滞在監視のチェックは行わない。
+                            // 滞在通知のチェックは行わない。
                             check = false;
 
-                            // 滞在監視カウントダウンタイマーを再開始する。
+                            // 滞在通知カウントダウンタイマーを再開始する。
                             restartStayCountDownTimer();
 
                             // ループを終了する。
@@ -359,7 +361,7 @@ public class KidsAlermService extends Service {
                     }
                 }
 
-                // 滞在監視のチェックを行う場合
+                // 滞在通知のチェックを行う場合
                 if (check) {
                     // 前回ロケーションからの距離を取得する。
                     double distance = MonitorUtil.getDistance(mPrevLocation, location, DISTANCE_DIGIT);
@@ -367,7 +369,7 @@ public class KidsAlermService extends Service {
 
                     // 移動した場合
                     if (DISTANCE_IGNORE < distance) {
-                        // 滞在監視カウントダウンタイマーを再開始する。
+                        // 滞在通知カウントダウンタイマーを再開始する。
                         restartStayCountDownTimer();
                     }
                 }
@@ -389,7 +391,7 @@ public class KidsAlermService extends Service {
 
     /**************************************************************************/
     /**
-     * 滞在監視カウントダウンタイマークラス
+     * 滞在通知カウントダウンタイマークラス
      *
      */
     private class StayCountDownTimer extends CountDownTimer {

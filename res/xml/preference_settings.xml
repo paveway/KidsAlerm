@@ -5,7 +5,8 @@
     <PreferenceCategory
         android:title="@string/category_title_app">
 
-        <info.paveway.kidsalerm.dialog.EditDialogPreference
+        <!-- アプリケーションパスワード -->
+        <info.paveway.kidsalerm.dialog.PasswordDialogPreference
             android:key="appPassword"
             android:title="@string/app_password_title"
             android:summary="@string/app_password_summary"
@@ -24,7 +25,7 @@
             android:dialogTitle="@string/mail_user_name_dialogtitle"
             android:hint="user name" />
 
-        <info.paveway.kidsalerm.dialog.EditDialogPreference
+        <info.paveway.kidsalerm.dialog.PasswordDialogPreference
             android:key="mailPassword"
             android:title="@string/mail_password_title"
             android:summary="@string/mail_password_summary"
@@ -34,7 +35,7 @@
         <PreferenceScreen
             android:key="mailFrom"
             android:title="送信元メールアドレス"
-            android:summary="送信元のGMAILアドレスを選択してください" >
+            android:summary="送信元のGmailアドレスを選択してください" >
         </PreferenceScreen>
 
         <PreferenceScreen
@@ -46,30 +47,30 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/category_title_monitor">
+        android:title="@string/category_title_notice">
 
         <CheckBoxPreference
-            android:key="monitorPowerOn"
-            android:title="@string/monitor_power_on_title"
-            android:summary="@string/monitor_power_on_summary" />
+            android:key="noticePowerOn"
+            android:title="@string/notice_power_on_title"
+            android:summary="@string/notice_power_on_summary" />
 
         <CheckBoxPreference
-            android:key="monitorPowerOff"
-            android:title="@string/monitor_power_off_title"
-            android:summary="@string/monitor_power_off_summary" />
+            android:key="noticePowerOff"
+            android:title="@string/notice_power_off_title"
+            android:summary="@string/notice_power_off_summary" />
 
         <CheckBoxPreference
-            android:key="monitorStay"
-            android:title="@string/monitor_stay_title"
-            android:summary="@string/monitor_stay_summary" />
+            android:key="noticeStay"
+            android:title="@string/notice_stay_title"
+            android:summary="@string/notice_stay_summary" />
 
         <EditTextPreference
-            android:key="monitorStayTime"
-            android:title="@string/monitor_stay_time_title"
-            android:summary="@string/monitor_stay_time_summary"
-            android:dialogTitle="@string/monitor_stay_time_dialogtitle"
-            android:dialogMessage="@string/monitor_stay_time_summary"
-            android:dependency="monitorStay"
+            android:key="noticeStayTime"
+            android:title="@string/notice_stay_time_title"
+            android:summary="@string/notice_stay_time_summary"
+            android:dialogTitle="@string/notice_stay_time_dialogtitle"
+            android:dialogMessage="@string/notice_stay_time_summary"
+            android:dependency="noticeStay"
             android:inputType="number"
             android:maxLength="4"
             android:text="120"
@@ -79,7 +80,7 @@
             android:key="exclusionPlace"
             android:title="@string/select_stay_exclusion_title"
             android:summary="@string/select_stay_exclusion_summary"
-            android:dependency="monitorStay" >
+            android:dependency="noticeStay" >
         </PreferenceScreen>
 
     </PreferenceCategory>

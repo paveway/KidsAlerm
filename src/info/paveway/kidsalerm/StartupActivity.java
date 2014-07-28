@@ -1,7 +1,11 @@
 package info.paveway.kidsalerm;
 
+import javax.mail.event.TransportEvent;
+import javax.mail.event.TransportListener;
+
 import info.paveway.kidsalerm.CommonConstants.PrefsKey;
 import info.paveway.kidsalerm.CommonConstants.RequestCode;
+import info.paveway.kidsalerm.dialog.ProgressStatusDialog;
 import info.paveway.kidsalerm.mail.MailData;
 import info.paveway.kidsalerm.mail.SendMailThread;
 import info.paveway.kidsalerm.service.KidsAlermService;
@@ -14,10 +18,12 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -34,11 +40,20 @@ public class StartupActivity extends ActionBarActivity {
     /** ロガー */
     private Logger mLogger = new Logger(StartupActivity.class);
 
+    /** サービス状態値 */
+    private TextView mServiceStatusValue;
+
     /** サービス開始ボタン */
     private Button mStartServiceButton;
 
     /** サービス停止ボタン */
     private Button mStopServiceButton;
+
+    /** メール送信確認ボタン */
+    private Button mConfirmSendMailButton;
+
+    /** 処理中ダイアログ */
+    private ProgressStatusDialog mProgressDialog;
 
     /**
      * 生成した時に呼び出される。
@@ -55,15 +70,20 @@ public class StartupActivity extends ActionBarActivity {
         // レイアウトを設定する。
         setContentView(R.layout.activity_startup);
 
-        mStartServiceButton = (Button)findViewById(R.id.startServiceButton);
-        mStopServiceButton = (Button)findViewById(R.id.stopServiceButton);
+        mServiceStatusValue    = (TextView)findViewById(R.id.serviceStatusValue);
+        mStartServiceButton    = (Button)findViewById(R.id.startServiceButton);
+        mStopServiceButton     = (Button)findViewById(R.id.stopServiceButton);
+        mConfirmSendMailButton = (Button)findViewById(R.id.confirmSendMailButton);
         mStartServiceButton.setOnClickListener(new ButtonOnClickListener(StartupActivity.this));
         mStopServiceButton.setOnClickListener(new ButtonOnClickListener(StartupActivity.this));
+        mConfirmSendMailButton.setOnClickListener(new ButtonOnClickListener(StartupActivity.this));
         ((Button)findViewById(R.id.settingsPreferenceButton)).setOnClickListener(new ButtonOnClickListener(StartupActivity.this));
-        ((Button)findViewById(R.id.confirmSendMailButton)).setOnClickListener(new ButtonOnClickListener(StartupActivity.this));
 
-        // サービスボタンの設定を行う。
-        setServiceButton();
+        // サービス状態を設定する。
+        setServiceStatusValue();
+
+        // ボタンの有効設定を行う。
+        enableButton();
 
         mLogger.d("OUT(OK)");
     }
@@ -81,29 +101,65 @@ public class StartupActivity extends ActionBarActivity {
 
         // 設定画面の場合
         if (RequestCode.SETTINGS_PREFERENCE == requestCode) {
+            // サービス状態を設定する。
+            setServiceStatusValue();
+
+            // ボタンの有効設定を行う。
+            enableButton();
         }
 
         mLogger.d("OUT(OK)");
     }
 
     /**
-     * サービスボタンの設定を行う。
+     * サービス状態を設定する。
      */
-    private void setServiceButton() {
-        mLogger.d("IN");
+    private void setServiceStatusValue() {
+        String status = "停止";
 
         // サービスが開始されている場合
         if (ServiceUtil.isServiceRunning(StartupActivity.this, KidsAlermService.class)) {
-            mStartServiceButton.setEnabled(false);
-            mStopServiceButton.setEnabled(true);
+            status = "開始";
+        }
+        mServiceStatusValue.setText(status);
+    }
 
-        // サービスが停止している場合
-        } else {
-            mStartServiceButton.setEnabled(true);
-            mStopServiceButton.setEnabled(false);
+    /**
+     * ボタンの有効無効を設定する。
+     */
+    private void enableButton() {
+        // プリフェレンスを取得する。
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(StartupActivity.this);
+
+        boolean mailEnable = false;
+        boolean serviceEnable = false;
+
+        // アプリケーションパスワードを取得する。
+        String appPassword = prefs.getString(PrefsKey.APP_PASSWORD, "");
+        // アプリケーションパスワードが取得できた場合
+        if (StringUtil.isNotNullOrEmpty(appPassword)) {
+            // メール設定の設定値を取得する。
+            String userName = prefs.getString(PrefsKey.MAIL_USER_NAME, "");
+            String password = prefs.getString(PrefsKey.MAIL_PASSWORD, "");
+            String from     = prefs.getString(PrefsKey.MAIL_FROM, "");
+            String to       = prefs.getString(PrefsKey.MAIL_TO, "");
+            // 全て設定済みの場合
+            if (StringUtil.isNotNullOrEmpty(userName) &&
+                StringUtil.isNotNullOrEmpty(password) &&
+                StringUtil.isNotNullOrEmpty(from)     &&
+                StringUtil.isNotNullOrEmpty(to)) {
+                mailEnable = true;
+            }
+
+            // サービスが開始されている場合
+            if (ServiceUtil.isServiceRunning(StartupActivity.this, KidsAlermService.class)) {
+                serviceEnable = true;
+            }
         }
 
-        mLogger.d("OUT(OK)");
+        mStartServiceButton.setEnabled(!serviceEnable);
+        mStopServiceButton.setEnabled(serviceEnable);
+        mConfirmSendMailButton.setEnabled(mailEnable);
     }
 
     /**************************************************************************/
@@ -148,8 +204,11 @@ public class StartupActivity extends ActionBarActivity {
                 // サービスを開始する。
                 ServiceUtil.startService(mContext);
 
-                // サービスボタンの設定を行う。
-                setServiceButton();
+                // サービス状態を設定する。
+                setServiceStatusValue();
+
+                // ボタンの有効無効を設定する。
+                enableButton();
                 break;
 
             // サービス停止ボタンの場合
@@ -157,8 +216,11 @@ public class StartupActivity extends ActionBarActivity {
                 // サービスを停止する。
                 ServiceUtil.stopService(mContext);
 
-                // サービスボタンの設定を行う。
-                setServiceButton();
+                // サービス状態を設定する。
+                setServiceStatusValue();
+
+                // ボタンの有効無効を設定する。
+                enableButton();
                 break;
 
             // 設定画面ボタンの場合
@@ -201,10 +263,65 @@ public class StartupActivity extends ActionBarActivity {
                 mailData.setTo(      to);
                 mailData.setSubject( resources.getString(R.string.send_mail_subject));
 
+                FragmentManager manager = getSupportFragmentManager();
+                mProgressDialog = ProgressStatusDialog.newInstance("テストメール送信中", "しばらくお待ちください");
+                mProgressDialog.setCancelable(false);
+                mProgressDialog.show(manager, ProgressStatusDialog.class.getSimpleName());
+
                 mailData.setText("メール送信テスト");
-                new Thread(new SendMailThread(mailData)).start();
+                new Thread(new SendMailThread(mailData, new MailTransportListener())).start();
                 break;
             }
+
+            mLogger.d("OUT(OK)");
+        }
+    }
+
+    /**************************************************************************/
+    /**
+     * メール送信リスナークラス
+     *
+     */
+    private class MailTransportListener implements TransportListener {
+
+        /** ロガー */
+        private Logger mLogger = new Logger(MailTransportListener.class);
+
+        @Override
+        public void messageDelivered(TransportEvent event) {
+            mLogger.d("IN");
+
+            Toast.makeText(
+                    StartupActivity.this,
+                    "メール送信成功", Toast.LENGTH_SHORT).show();
+
+            mProgressDialog.dismiss();
+
+            mLogger.d("OUT(OK)");
+        }
+
+        @Override
+        public void messageNotDelivered(TransportEvent event) {
+            mLogger.d("IN");
+
+            Toast.makeText(
+                    StartupActivity.this,
+                    "メール送信失敗", Toast.LENGTH_SHORT).show();
+
+            mProgressDialog.dismiss();
+
+            mLogger.d("OUT(OK)");
+        }
+
+        @Override
+        public void messagePartiallyDelivered(TransportEvent event) {
+            mLogger.d("IN");
+
+            Toast.makeText(
+                    StartupActivity.this,
+                    "メール一部送信", Toast.LENGTH_SHORT).show();
+
+            mProgressDialog.dismiss();
 
             mLogger.d("OUT(OK)");
         }

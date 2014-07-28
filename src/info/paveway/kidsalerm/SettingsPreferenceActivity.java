@@ -42,10 +42,10 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
     private EditDialogPreference mAppPassword;
 
     /** メールユーザ名 */
-    private EditTextPreference mMailUserName;
+    private EditDialogPreference mMailUserName;
 
     /** メールパスワード */
-    private EditTextPreference mMailPassword;
+    private EditDialogPreference mMailPassword;
 
     /** 送信元メールアドレス */
     private PreferenceScreen mMailFrom;
@@ -53,19 +53,19 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
     /** 送信先メールアドレス */
     private PreferenceScreen mMailTo;
 
-    /** 電源ON監視 */
-    private CheckBoxPreference mMonitorPowerOn;
+    /** 電源ON通知 */
+    private CheckBoxPreference mNoticePowerOn;
 
-    /** 電源OFF監視 */
-    private CheckBoxPreference mMonitorPowerOff;
+    /** 電源OFF通知 */
+    private CheckBoxPreference mNoticePowerOff;
 
-    /** 滞在監視 */
-    private CheckBoxPreference mMonitorStay;
+    /** 滞在通知 */
+    private CheckBoxPreference mNoticeStay;
 
-    /** 滞在監視時間 */
-    private EditTextPreference mMonitorStayTime;
+    /** 滞在通知時間 */
+    private EditTextPreference mNoticeStayTime;
 
-    /** 滞在監視除外場所選択 */
+    /** 滞在通知除外場所選択 */
     private PreferenceScreen mExclusionPlace;
 
     /**
@@ -89,16 +89,15 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
 
         // 各入力項目を取得する。
         mAppPassword     = (EditDialogPreference)findPreference(PrefsKey.APP_PASSWORD);
-        mMailUserName    = (EditTextPreference)findPreference(PrefsKey.MAIL_USER_NAME);
-        mMailUserName    = (EditTextPreference)findPreference(PrefsKey.MAIL_USER_NAME);
-        mMailPassword    = (EditTextPreference)findPreference(PrefsKey.MAIL_PASSWORD);
-        mMailFrom        = (PreferenceScreen)findPreference(PrefsKey.MAIL_FROM);
-        mMailTo          = (PreferenceScreen)findPreference(PrefsKey.MAIL_TO);
-        mMonitorPowerOn  = (CheckBoxPreference)findPreference(PrefsKey.MONITOR_POWER_ON);
-        mMonitorPowerOff = (CheckBoxPreference)findPreference(PrefsKey.MONITOR_POWER_OFF);
-        mMonitorStay     = (CheckBoxPreference)findPreference(PrefsKey.MONITOR_STAY);
-        mMonitorStayTime = (EditTextPreference)findPreference(PrefsKey.MONITOR_STAY_TIME);
-        mExclusionPlace  = (PreferenceScreen)findPreference(PrefsKey.EXCULSION_PLACE);
+        mMailUserName    = (EditDialogPreference)findPreference(PrefsKey.MAIL_USER_NAME);
+        mMailPassword    = (EditDialogPreference)findPreference(PrefsKey.MAIL_PASSWORD);
+        mMailFrom        = (PreferenceScreen    )findPreference(PrefsKey.MAIL_FROM);
+        mMailTo          = (PreferenceScreen    )findPreference(PrefsKey.MAIL_TO);
+        mNoticePowerOn  = (CheckBoxPreference  )findPreference(PrefsKey.NOTICE_POWER_ON);
+        mNoticePowerOff = (CheckBoxPreference  )findPreference(PrefsKey.NOTICE_POWER_OFF);
+        mNoticeStay     = (CheckBoxPreference  )findPreference(PrefsKey.NOTICE_STAY);
+        mNoticeStayTime = (EditTextPreference  )findPreference(PrefsKey.NOTICE_STAY_TIME);
+        mExclusionPlace  = (PreferenceScreen    )findPreference(PrefsKey.EXCULSION_PLACE);
 
         // アプリケーションパスワードが入力済みの場合
         String appPassword = mPrefs.getString(PrefsKey.APP_PASSWORD, "");
@@ -114,28 +113,32 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
             mMailUserName.setSummary("設定済み：" + mailUserName);
         }
 
+        // メールパスワードが入力済みの場合
         String mailPassword = mPrefs.getString(PrefsKey.MAIL_PASSWORD, "");
         if (StringUtil.isNotNullOrEmpty(mailPassword)) {
             // サマリーを設定する。
             mMailPassword.setSummary("設定済み：●●●●●");
         }
 
+        // 送信元メールアドレスが入力済みの場合
         String mailFrom = mPrefs.getString(PrefsKey.MAIL_FROM, "");
         if (StringUtil.isNotNullOrEmpty(mailFrom)) {
             // サマリーを設定する。
             mMailFrom.setSummary("設定済み：" + mailFrom);
         }
 
+        // 送信先メールアドレスが入力済みの場合
         String mailTo = mPrefs.getString(PrefsKey.MAIL_TO, "");
         if (StringUtil.isNotNullOrEmpty(mailTo)) {
             // サマリーを設定する。
             mMailTo.setSummary("設定済み：" + mailTo);
         }
 
-        String monitorStatyTime = mPrefs.getString(PrefsKey.MONITOR_STAY_TIME, "");
-        if (StringUtil.isNotNullOrEmpty(monitorStatyTime)) {
+        // 滞在通知時間が入力済みの場合
+        String noticeStatyTime = mPrefs.getString(PrefsKey.NOTICE_STAY_TIME, "");
+        if (StringUtil.isNotNullOrEmpty(noticeStatyTime)) {
             // サマリーを設定する。
-            mMonitorStayTime.setSummary("設定済み：" + monitorStatyTime + "分");
+            mNoticeStayTime.setSummary("設定済み：" + noticeStatyTime + "分");
         }
 
         // クリックリスナーを設定する。
@@ -160,75 +163,52 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         mLogger.d("IN");
 
-        // 送信元メールアドレス選択の場合
-        if (RequestCode.PICK_CONTACT_FROM == requestCode) {
-            // 正常終了の場合
-            if (RESULT_OK == resultCode) {
-                // データがある場合
-                if (null != data) {
-                    // メールアドレスを取得する。
-                    String emailAddress = getEmailAddressFrom(data.getData());
-                    // メールアドレスが取得できた場合
-                    if (StringUtil.isNotNullOrEmpty(emailAddress)) {
-                        // メールアドレスを保存する。
-                        Editor editor = mPrefs.edit();
-                        editor.putString(PrefsKey.MAIL_FROM, emailAddress);
-                        editor.commit();
-                        mMailFrom.setSummary(emailAddress);
-                        mLogger.d("OUT(OK)");
-                        return;
+        // 送信元メールアドレス選択かつ正常終了かつデータがある場合
+        if ((RequestCode.PICK_CONTACT_FROM == requestCode) && (RESULT_OK == resultCode) && (null != data)) {
+            // メールアドレスを取得する。
+            String emailAddress = getEmailAddressFrom(data.getData());
 
-                    // メールアドレスが取得できない場合
-                    } else {
-                        Toast.makeText(this, "GMailアドレスではありません", Toast.LENGTH_SHORT).show();
-                        mLogger.d("OUT(NG)");
-                        return;
-                    }
+            // メールアドレスが取得できた場合
+            if (StringUtil.isNotNullOrEmpty(emailAddress)) {
+                // メールアドレスを保存する。
+                Editor editor = mPrefs.edit();
+                editor.putString(PrefsKey.MAIL_FROM, emailAddress);
+                editor.commit();
+                mMailFrom.setSummary("設定済み：" + emailAddress);
 
-                // データがない場合
-                } else {
-                    // 終了する。
-                    mLogger.d("OUT(NG)");
-                    return;
-                }
+                // ビューの表示可否を設定する。
+                enableViews();
 
-            // 正常終了ではない場合
+                mLogger.d("OUT(OK)");
+                return;
+
+            // メールアドレスが取得できない場合
             } else {
-                // 終了する。
+                Toast.makeText(this, "GMailアドレスではありません", Toast.LENGTH_SHORT).show();
+
+                // ビューの表示可否を設定する。
+                enableViews();
+
                 mLogger.d("OUT(NG)");
                 return;
             }
 
-        // 送信先メールアドレス選択の場合
-        } else if (RequestCode.PICK_CONTACT_TO == requestCode) {
-            // 正常終了の場合
-            if (RESULT_OK == resultCode) {
-                // データがある場合
-                if (null != data) {
-                    // メールアドレスを取得する。
-                    String emailAddress = getEmailAddressTo(data.getData());
-                    // メールアドレスが取得できた場合
-                    if (StringUtil.isNotNullOrEmpty(emailAddress)) {
-                        // メールアドレスを保存する。
-                        Editor editor = mPrefs.edit();
-                        editor.putString(PrefsKey.MAIL_TO, emailAddress);
-                        editor.commit();
-                        mMailTo.setSummary(emailAddress);
-                        mLogger.d("OUT(OK)");
-                        return;
-                    }
+        // 送信先メールアドレス選択かつ正常終了かつデータがある場合
+        } else if ((RequestCode.PICK_CONTACT_TO == requestCode) && (RESULT_OK == resultCode) && (null != data)) {
+            // メールアドレスを取得する。
+            String emailAddress = getEmailAddressTo(data.getData());
+            // メールアドレスが取得できた場合
+            if (StringUtil.isNotNullOrEmpty(emailAddress)) {
+                // メールアドレスを保存する。
+                Editor editor = mPrefs.edit();
+                editor.putString(PrefsKey.MAIL_TO, emailAddress);
+                editor.commit();
+                mMailTo.setSummary("設定済み：" + emailAddress);
 
-                // データがない場合
-                } else {
-                    // 終了する。
-                    mLogger.d("OUT(NG)");
-                    return;
-                }
+                // ビューの表示可否を設定する。
+                enableViews();
 
-            // 正常終了ではない場合
-            } else {
-                // 終了する。
-                mLogger.d("OUT(NG)");
+                mLogger.d("OUT(OK)");
                 return;
             }
         }
@@ -259,6 +239,22 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
             String mailFrom     = mPrefs.getString(PrefsKey.MAIL_FROM,      "");
             String mailTo       = mPrefs.getString(PrefsKey.MAIL_TO,        "");
 
+            // メールユーザ名が取得できた場合
+            if (StringUtil.isNotNullOrEmpty(mailUserName)) {
+                mMailUserName.setSummary("設定済み：" + mailUserName);
+
+            // メールユーザ名が取得できない場合
+            } else {
+                mMailUserName.setSummary("送信メールサーバのユーザ名を入力してください");
+            }
+
+            // メールパスワードが設定済みの場合
+            if (StringUtil.isNotNullOrEmpty(mailPassword)) {
+                mMailPassword.setSummary("設定済み：●●●●●");
+            } else {
+                mMailPassword.setSummary("送信メールサーバのパスワードを入力してください");
+            }
+
             //メール設定が全て設定済みの場合
             if (StringUtil.isNotNullOrEmpty(mailUserName) &&
                 StringUtil.isNotNullOrEmpty(mailPassword) &&
@@ -280,10 +276,10 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
         mMailTo.setEnabled(mailEnabled);
 
         // その他の設定の表示可否を設定する。
-        mMonitorPowerOn.setEnabled(etcEnabled);
-        mMonitorPowerOff.setEnabled(etcEnabled);
-        mMonitorStay.setEnabled(etcEnabled);
-        mMonitorStayTime.setEnabled(etcEnabled);
+        mNoticePowerOn.setEnabled(etcEnabled);
+        mNoticePowerOff.setEnabled(etcEnabled);
+        mNoticeStay.setEnabled(etcEnabled);
+        mNoticeStayTime.setEnabled(etcEnabled);
         mExclusionPlace.setEnabled(etcEnabled);
 
         mLogger.d("OUT(OK)");
@@ -329,8 +325,11 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
         String emailAddress = null;
         try {
             cursor = getContentResolver().query(contactUri, null, null, null, null);
+            // カーソルが取得できた場合
             if (null != cursor) {
+                // データがある場合
                 if (cursor.moveToFirst()) {
+                    // データを取得する。
                     emailAddress = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA1));
 
                     // GMailアドレスチェック有りの場合
@@ -344,7 +343,9 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
                 }
             }
         } finally {
+            // カーソルが有効な場合
             if (null != cursor) {
+                // カーソルをクローズする。
                 cursor.close();
             }
         }

@@ -9,6 +9,7 @@ import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.event.TransportListener;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -41,13 +42,27 @@ public class SendMailThread implements Runnable {
     /** メールデータ */
     private MailData mMailData;
 
+    /** 送信リスナー */
+    private TransportListener mListener;
+
     /**
      * コンストラクタ
      *
      * @param mailData メールデータ
      */
     public SendMailThread(MailData mailData) {
+        this(mailData, null);
+    }
+
+    /**
+     * コンストラクタ
+     *
+     * @param mailData メールデータ
+     * @param listener リスナー
+     */
+    public SendMailThread(MailData mailData, TransportListener listener) {
         mMailData = mailData;
+        mListener = listener;
     }
 
     /**
@@ -79,8 +94,19 @@ public class SendMailThread implements Runnable {
             msg.setSubject(  mMailData.getSubject());
             msg.setText(     mMailData.getText(),	Encoding.UTF_8);
 
+            // トランスポートを取得する。
             t = session.getTransport(PROTOCOL);
+
+            // リスナーが有効な場合
+            if (null != mListener) {
+                // リスナーを設定する。
+                t.addTransportListener(mListener);
+            }
+
+            // 接続する。
             t.connect(mMailData.getUserName(), mMailData.getPassword());
+
+            // メールを送信する。
             t.sendMessage(msg, msg.getAllRecipients());
         } catch (Exception e) {
             mLogger.e(e);

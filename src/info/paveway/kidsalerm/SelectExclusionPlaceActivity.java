@@ -75,6 +75,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        mLogger.d("IN");
 
         // スーパークラスのメソッドを呼び出す。
         super.onCreate(savedInstanceState);
@@ -141,7 +142,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
             }
         } catch (Exception e) {
             // 終了する。
-            mLogger.e(e);
+            mLogger.e("OUT(NG)", e);
             Toast.makeText(
                     SelectExclusionPlaceActivity.this,
                     getResources().getString(R.string.stay_exclusion_error_map),
@@ -274,6 +275,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
 
     @Override
     public void onDelete() {
+        mLogger.d("IN");
 
         String title = mDeleteMarker.getTitle();
 
@@ -301,6 +303,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
             editor.commit();
         }
 
+        mLogger.d("OUT(OK)");
     }
 
     /**************************************************************************/
@@ -396,6 +399,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
         public boolean onMarkerClick(Marker marker) {
             mLogger.d("IN");
 
+            // マーカーを保存する。
             mDeleteMarker = marker;
 
             // 除外場所詳細ダイアログを表示する。

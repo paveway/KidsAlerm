@@ -94,8 +94,8 @@ public class KidsMonitorBroadcastReceiver extends BroadcastReceiver {
 
             // サービスが起動できた場合
             } else {
-                // 監視対象の場合
-                if (prefs.getBoolean(PrefsKey.MONITOR_POWER_ON, false)) {
+                // 通知対象の場合
+                if (prefs.getBoolean(PrefsKey.NOTICE_POWER_ON, false)) {
                     // メールを送信する。
                     StringBuilder text = new StringBuilder();
                     text.append(resources.getString(R.string.send_mail_text_power_on1));
@@ -111,8 +111,8 @@ public class KidsMonitorBroadcastReceiver extends BroadcastReceiver {
 
         // 終了した時
         } else if (Intent.ACTION_SHUTDOWN.equals(action)) {
-            // 監視対象の場合
-            if (prefs.getBoolean(PrefsKey.MONITOR_POWER_OFF, false)) {
+            // 通知対象の場合
+            if (prefs.getBoolean(PrefsKey.NOTICE_POWER_OFF, false)) {
                 // メールを送信する。
                 StringBuilder text = new StringBuilder();
                 text.append(resources.getString(R.string.send_mail_text_power_off1));
@@ -131,7 +131,7 @@ public class KidsMonitorBroadcastReceiver extends BroadcastReceiver {
             mLatitude  = String.valueOf(intent.getDoubleExtra(ExtraKey.LATITUDE,  0));
             mLongitude = String.valueOf(intent.getDoubleExtra(ExtraKey.LONGITUDE, 0));
 
-        // 滞在監視の場合
+        // 滞在通知の場合
         } else if (Action.STAY.equals(action)) {
             // 緯度、経度を取得する。
             mLatitude  = String.valueOf(intent.getDoubleExtra(ExtraKey.LATITUDE,  0));
@@ -140,7 +140,7 @@ public class KidsMonitorBroadcastReceiver extends BroadcastReceiver {
             // メールを送信する。
             StringBuilder text = new StringBuilder();
             text.append(resources.getString(R.string.send_mail_text_stay1));
-            text.append(prefs.getString(PrefsKey.MONITOR_STAY_TIME, ""));
+            text.append(prefs.getString(PrefsKey.NOTICE_STAY_TIME, ""));
             text.append(resources.getString(R.string.send_mail_text_stay2));
             text.append(getTimeString());
             text.append(resources.getString(R.string.send_mail_text_stay3));

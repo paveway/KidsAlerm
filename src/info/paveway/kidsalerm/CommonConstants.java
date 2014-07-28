@@ -31,17 +31,17 @@ public class CommonConstants {
         /** 送信先メールアドレス */
         public static final String MAIL_TO = "mailTo";
 
-        /** 電源ON監視 */
-        public static final String MONITOR_POWER_ON = "monitorPowerOn";
+        /** 電源ON通知 */
+        public static final String NOTICE_POWER_ON = "noticePowerOn";
 
-        /** 電源OFF監視 */
-        public static final String MONITOR_POWER_OFF = "monitorPowerOff";
+        /** 電源OFF通知 */
+        public static final String NOTICE_POWER_OFF = "noticePowerOff";
 
-        /** 滞在監視 */
-        public static final String MONITOR_STAY = "monitorStay";
+        /** 滞在通知 */
+        public static final String NOTICE_STAY = "noticeStay";
 
-        /** 滞在監視時間(分) */
-        public static final String MONITOR_STAY_TIME = "monitorStayTime";
+        /** 滞在通知時間(分) */
+        public static final String NOTICE_STAY_TIME = "noticeStayTime";
 
         /** 除外場所選択 */
         public static final String EXCULSION_PLACE = "exclusionPlace";
@@ -97,7 +97,7 @@ public class CommonConstants {
         /** ロケーション */
         public static final String LOCATION = PACKAGE_NAME + ".LOCATION";
 
-        /** 滞在監視 */
+        /** 滞在通知 */
         public static final String STAY = PACKAGE_NAME + ".STAY";
     }
 
@@ -117,6 +117,12 @@ public class CommonConstants {
 
         /** 登録済み除外場所名リスト */
         public static final String EXCLUSION_PLACE_NAME_LIST = "exclusionPlaceNameList";
+
+        /** 進捗プログレスダイアログタイトル */
+        public static final String PROGRESS_TITLE = "progressTitle";
+
+        /** 進捗プログレスダイアログメッセージ */
+        public static final String PROGRESS_MESSAGE = "progressMessage";
     }
 
     /**

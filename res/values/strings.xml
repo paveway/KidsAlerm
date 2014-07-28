@@ -23,7 +23,7 @@
     <!-- 設定画面 -->
     <string name="category_title_app">アプリケーション設定</string>
     <string name="category_title_mail">メール設定</string>
-    <string name="category_title_monitor">監視設定</string>
+    <string name="category_title_notice">通知設定</string>
 
     <string name="app_password_title">アプリケーションパスワード</string>
     <string name="app_password_summary">アプリケーションのパスワードを入力してください</string>
@@ -45,18 +45,18 @@
     <string name="mail_to_summary">送信先のメールアドレスを入力してください</string>
     <string name="mail_to_dialogtitle">送信先メールアドレス入力</string>
 
-    <string name="monitor_power_off_title">電源オフ</string>
-    <string name="monitor_power_off_summary">端末が終了した時を監視します</string>
+    <string name="notice_power_off_title">電源オフ</string>
+    <string name="notice_power_off_summary">端末が終了した時を監視します</string>
 
-    <string name="monitor_power_on_title">電源オン</string>
-    <string name="monitor_power_on_summary">端末が起動した時を監視します</string>
+    <string name="notice_power_on_title">電源オン</string>
+    <string name="notice_power_on_summary">端末が起動した時を監視します</string>
 
-    <string name="monitor_stay_title">滞在</string>
-    <string name="monitor_stay_summary">一ヶ所にある一定時間とどまった時を監視します</string>
+    <string name="notice_stay_title">滞在</string>
+    <string name="notice_stay_summary">一ヶ所にある一定時間とどまった時を監視します</string>
 
-    <string name="monitor_stay_time_title">滞在とみなす時間(分)</string>
-    <string name="monitor_stay_time_summary">滞在とみなす時間(分)を入力してください</string>
-    <string name="monitor_stay_time_dialogtitle">滞在時間入力</string>
+    <string name="notice_stay_time_title">滞在とみなす時間(分)</string>
+    <string name="notice_stay_time_summary">滞在とみなす時間(分)を入力してください</string>
+    <string name="notice_stay_time_dialogtitle">滞在時間入力</string>
 
     <string name="select_stay_exclusion_title">滞在監視除外場所選択</string>
     <string name="select_stay_exclusion_summary">滞在監視を除外する場所を選択してください</string>
