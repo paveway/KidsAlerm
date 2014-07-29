@@ -2,6 +2,7 @@
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android" >
 
+    <!-- アプリケーション設定 -->
     <PreferenceCategory
         android:title="@string/category_title_app">
 
@@ -15,6 +16,7 @@
 
     </PreferenceCategory>
 
+    <!-- メール設定 -->
     <PreferenceCategory
         android:title="@string/category_title_mail">
 
@@ -34,37 +36,51 @@
 
         <PreferenceScreen
             android:key="mailFrom"
-            android:title="送信元メールアドレス"
-            android:summary="送信元のGmailアドレスを選択してください" >
+            android:title="@string/mail_from_title"
+            android:summary="@string/mail_from_summary" >
         </PreferenceScreen>
 
         <PreferenceScreen
             android:key="mailTo"
-            android:title="送信先メールアドレス"
-            android:summary="送信先のアドレスを選択してください" >
+            android:title="@string/mail_to_title"
+            android:summary="@string/mail_to_summary" >
+        </PreferenceScreen>
+
+        <PreferenceScreen
+            android:key="mailClear"
+            android:title="@string/mail_clear_title"
+            android:summary="@string/mail_clear_summary" >
         </PreferenceScreen>
 
     </PreferenceCategory>
 
+    <!-- 通知設定 -->
     <PreferenceCategory
         android:title="@string/category_title_notice">
 
+        <!-- 電源ON通知 -->
         <CheckBoxPreference
             android:key="noticePowerOn"
             android:title="@string/notice_power_on_title"
-            android:summary="@string/notice_power_on_summary" />
+            android:summary="@string/notice_power_on_summary"
+            android:defaultValue="false" />
 
+        <!-- 電源OFF通知 -->
         <CheckBoxPreference
             android:key="noticePowerOff"
             android:title="@string/notice_power_off_title"
-            android:summary="@string/notice_power_off_summary" />
+            android:summary="@string/notice_power_off_summary"
+            android:defaultValue="true" />
 
+        <!-- 滞在通知 -->
         <CheckBoxPreference
             android:key="noticeStay"
             android:title="@string/notice_stay_title"
-            android:summary="@string/notice_stay_summary" />
+            android:summary="@string/notice_stay_summary"
+            android:defaultValue="false" />
 
-        <EditTextPreference
+        <!-- 滞在時間 -->
+        <info.paveway.kidsalerm.dialog.EditDialogPreference
             android:key="noticeStayTime"
             android:title="@string/notice_stay_time_title"
             android:summary="@string/notice_stay_time_summary"
@@ -74,12 +90,13 @@
             android:inputType="number"
             android:maxLength="4"
             android:text="120"
-            android:hint="0～1440" />
+            android:hint="1～1339" />
 
+        <!-- 除外場所選択 -->
         <PreferenceScreen
             android:key="exclusionPlace"
-            android:title="@string/select_stay_exclusion_title"
-            android:summary="@string/select_stay_exclusion_summary"
+            android:title="@string/exclusion_place_title"
+            android:summary="@string/exclusion_place_summary"
             android:dependency="noticeStay" >
         </PreferenceScreen>
 

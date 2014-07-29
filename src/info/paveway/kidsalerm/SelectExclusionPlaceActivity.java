@@ -105,7 +105,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
                         // 終了する。
                         Toast.makeText(
                                 SelectExclusionPlaceActivity.this,
-                                getResources().getString(R.string.stay_exclusion_error_google_play_service),
+                                getResources().getString(R.string.select_exclusion_place_error_google_play_service),
                                 Toast.LENGTH_SHORT).show();
                         finish();
                         mLogger.w("OUT(NG)");
@@ -118,7 +118,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
                 // 終了する。
                 Toast.makeText(
                         SelectExclusionPlaceActivity.this,
-                        getResources().getString(R.string.stay_exclusion_error_google_play_service),
+                        getResources().getString(R.string.select_exclusion_place_error_google_play_service),
                         Toast.LENGTH_SHORT).show();
                 finish();
                 mLogger.w("OUT(NG)");
@@ -145,7 +145,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
             mLogger.e("OUT(NG)", e);
             Toast.makeText(
                     SelectExclusionPlaceActivity.this,
-                    getResources().getString(R.string.stay_exclusion_error_map),
+                    getResources().getString(R.string.select_exclusion_place_error_map),
                     Toast.LENGTH_SHORT).show();
             finish();
             return;

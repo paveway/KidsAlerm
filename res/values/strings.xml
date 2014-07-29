@@ -16,10 +16,6 @@
     <string name="login_dialog_error_input_password">パスワードを入力してください</string>
     <string name="login_dialog_error_password">パスワードが違います</string>
 
-    <!-- 滞在監視除外場所選択画面 -->
-    <string name="stay_exclusion_error_google_play_service">Google Play Serviceが利用できません</string>
-    <string name="stay_exclusion_error_map">マップの初期化ができません</string>
-
     <!-- 設定画面 -->
     <string name="category_title_app">アプリケーション設定</string>
     <string name="category_title_mail">メール設定</string>
@@ -29,37 +25,52 @@
     <string name="app_password_summary">アプリケーションのパスワードを入力してください</string>
     <string name="app_password_dialogtitle">アプリケーションパスワード入力</string>
 
-    <string name="mail_user_name_title">送信メールサーバユーザ名</string>
-    <string name="mail_user_name_summary">送信メールサーバのユーザ名を入力してください</string>
-    <string name="mail_user_name_dialogtitle">送信メールサーバユーザ名入力</string>
+    <string name="mail_user_name_title">Gmail送信メールサーバユーザ名</string>
+    <string name="mail_user_name_summary">Gmail送信メールサーバのユーザ名を入力してください</string>
+    <string name="mail_user_name_dialogtitle">Gmail送信メールサーバユーザ名入力</string>
 
-    <string name="mail_password_title">送信メールサーバパスワード</string>
-    <string name="mail_password_summary">送信メールサーバのパスワードを入力してください</string>
-    <string name="mail_password_dialogtitle">送信メールサーバパスワード入力</string>
+    <string name="mail_password_title">Gmail送信メールサーバパスワード</string>
+    <string name="mail_password_summary">Gmail送信メールサーバのパスワードを入力してください</string>
+    <string name="mail_password_dialogtitle">Gmail送信メールサーバパスワード入力</string>
 
-    <string name="mail_from_title">送信元メールアドレス</string>
-    <string name="mail_from_summary">送信元のメールアドレスを入力してください</string>
-    <string name="mail_from_dialogtitle">送信元メールアドレス入力</string>
+    <string name="mail_from_title">送信元Gmailメールアドレス</string>
+    <string name="mail_from_summary">送信元のGmailメールアドレスを選択してください</string>
 
     <string name="mail_to_title">送信先メールアドレス</string>
     <string name="mail_to_summary">送信先のメールアドレスを入力してください</string>
-    <string name="mail_to_dialogtitle">送信先メールアドレス入力</string>
 
-    <string name="notice_power_off_title">電源オフ</string>
-    <string name="notice_power_off_summary">端末が終了した時を監視します</string>
+    <string name="mail_clear_title">メール設定クリア</string>
+    <string name="mail_clear_summary">メールの設定をクリアします</string>
 
-    <string name="notice_power_on_title">電源オン</string>
-    <string name="notice_power_on_summary">端末が起動した時を監視します</string>
+    <string name="notice_power_on_title">電源ON</string>
+    <string name="notice_power_on_summary">端末が起動した時通知します</string>
+
+    <string name="notice_power_off_title">電源OFF</string>
+    <string name="notice_power_off_summary">端末が終了した時通知します</string>
 
     <string name="notice_stay_title">滞在</string>
-    <string name="notice_stay_summary">一ヶ所にある一定時間とどまった時を監視します</string>
+    <string name="notice_stay_summary">一ヶ所にある一定時間とどまった場合通知します</string>
 
     <string name="notice_stay_time_title">滞在とみなす時間(分)</string>
-    <string name="notice_stay_time_summary">滞在とみなす時間(分)を入力してください</string>
+    <string name="notice_stay_time_summary">滞在とみなす時間(1～1339分)を入力してください</string>
     <string name="notice_stay_time_dialogtitle">滞在時間入力</string>
 
-    <string name="select_stay_exclusion_title">滞在監視除外場所選択</string>
-    <string name="select_stay_exclusion_summary">滞在監視を除外する場所を選択してください</string>
+    <string name="exclusion_place_title">除外場所選択</string>
+    <string name="exclusion_place_summary">滞在を除外する場所を選択してください</string>
+
+    <string name="summary_prefix">設定済み：</string>
+    <string name="summary_password">設定済み：●●●●●</string>
+    <string name="mail_from_error">Gmailアドレスではありません</string>
+
+    <!-- 除外場所選択画面 -->
+    <string name="select_exclusion_place_error_google_play_service">Google Play Serviceが利用できません</string>
+    <string name="select_exclusion_place_error_map">マップの初期化ができません</string>
+
+    <!-- メール設定クリアダイアログ -->
+    <string name="mail_clear_dialog_title">メール設定クリア</string>
+    <string name="mail_clear_dialog_positive_button">クリア</string>
+    <string name="mail_clear_dialog_negative_button">キャンセル</string>
+    <string name="mail_clear_dialog_message">メールの設定をクリアしますか</string>
 
     <!-- メール送信関連 -->
     <string name="send_mail_error_data">メール設定に未設定項目があります</string>

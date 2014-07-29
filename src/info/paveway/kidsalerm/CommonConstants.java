@@ -31,6 +31,9 @@ public class CommonConstants {
         /** 送信先メールアドレス */
         public static final String MAIL_TO = "mailTo";
 
+        /** メール設定クリア */
+        public static final String MAIL_CLEAR = "mailClear";
+
         /** 電源ON通知 */
         public static final String NOTICE_POWER_ON = "noticePowerOn";
 
@@ -141,6 +144,9 @@ public class CommonConstants {
 
         /** 送信先連絡帳選択 */
         public static final int PICK_CONTACT_TO = 4;
+
+        /** メール設定クリア */
+        public static final int MAIL_CLEAR = 5;
     }
 
     /**
