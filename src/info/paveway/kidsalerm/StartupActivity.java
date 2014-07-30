@@ -16,7 +16,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
@@ -40,8 +44,19 @@ public class StartupActivity extends ActionBarActivity {
     /** ロガー */
     private Logger mLogger = new Logger(StartupActivity.class);
 
-    /** サービス状態値 */
+    /** 通知サービス状態 */
     private TextView mServiceStatusValue;
+
+    /** ネットワーク状態 */
+    private TextView mNetworkStatusValue;
+
+    /** メール設定 */
+    private TextView mMailSettingValue;
+
+    /** メール送信状態 */
+    private TextView mMailSendStatusValue;
+
+    private String mMailSendStatus = "未確認";
 
     /** サービス開始ボタン */
     private Button mStartServiceButton;
@@ -54,6 +69,12 @@ public class StartupActivity extends ActionBarActivity {
 
     /** 処理中ダイアログ */
     private ProgressStatusDialog mProgressDialog;
+
+    /** メール送信カウントダウンタイマー */
+    private SendMailCountDownTimer mSendMailCountDownTimer;
+
+    /** ハンドラ */
+    private Handler mHandler = new Handler();
 
     /**
      * 生成した時に呼び出される。
@@ -71,6 +92,9 @@ public class StartupActivity extends ActionBarActivity {
         setContentView(R.layout.activity_startup);
 
         mServiceStatusValue    = (TextView)findViewById(R.id.serviceStatusValue);
+        mNetworkStatusValue    = (TextView)findViewById(R.id.networkStatusValue);
+        mMailSettingValue      = (TextView)findViewById(R.id.mailSettingValue);
+        mMailSendStatusValue   = (TextView)findViewById(R.id.mailSendStatusValue);
         mStartServiceButton    = (Button)findViewById(R.id.startServiceButton);
         mStopServiceButton     = (Button)findViewById(R.id.stopServiceButton);
         mConfirmSendMailButton = (Button)findViewById(R.id.confirmSendMailButton);
@@ -79,8 +103,8 @@ public class StartupActivity extends ActionBarActivity {
         mConfirmSendMailButton.setOnClickListener(new ButtonOnClickListener(StartupActivity.this));
         ((Button)findViewById(R.id.settingsPreferenceButton)).setOnClickListener(new ButtonOnClickListener(StartupActivity.this));
 
-        // サービス状態を設定する。
-        setServiceStatusValue();
+        // 各状態を設定する。
+        setStatusValue();
 
         // ボタンの有効設定を行う。
         enableButton();
@@ -101,8 +125,8 @@ public class StartupActivity extends ActionBarActivity {
 
         // 設定画面の場合
         if (RequestCode.SETTINGS_PREFERENCE == requestCode) {
-            // サービス状態を設定する。
-            setServiceStatusValue();
+            // 各状態を設定する。
+            setStatusValue();
 
             // ボタンの有効設定を行う。
             enableButton();
@@ -112,16 +136,53 @@ public class StartupActivity extends ActionBarActivity {
     }
 
     /**
-     * サービス状態を設定する。
+     * 戻るボタンが押された時に呼び出される。
      */
-    private void setServiceStatusValue() {
-        String status = "停止";
+    @Override
+    public void onBackPressed() {
+        mLogger.d("IN");
 
+        // 終了する。
+        finish();
+
+        mLogger.d("OUT(OK)");
+    }
+
+    /**
+     * 各状態を設定する。
+     */
+    private void setStatusValue() {
         // サービスが開始されている場合
+        String serviceStatus = "停止";
         if (ServiceUtil.isServiceRunning(StartupActivity.this, KidsAlermService.class)) {
-            status = "開始";
+            serviceStatus = "開始";
         }
-        mServiceStatusValue.setText(status);
+        mServiceStatusValue.setText(serviceStatus);
+
+        String networkStatus = "切断";
+        if (isNetworkEnabled()) {
+            networkStatus = "接続";
+        }
+        mNetworkStatusValue.setText(networkStatus);
+
+        String mailSetting = "未設定";
+        // プリフェレンスを取得する。
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(StartupActivity.this);
+        // メール設定の設定値を取得する。
+        String userName = prefs.getString(PrefsKey.MAIL_USER_NAME, "");
+        String password = prefs.getString(PrefsKey.MAIL_PASSWORD, "");
+        String from     = prefs.getString(PrefsKey.MAIL_FROM, "");
+        String to       = prefs.getString(PrefsKey.MAIL_TO, "");
+        // 全て設定済みの場合
+        if (StringUtil.isNotNullOrEmpty(userName) &&
+            StringUtil.isNotNullOrEmpty(password) &&
+            StringUtil.isNotNullOrEmpty(from)     &&
+            StringUtil.isNotNullOrEmpty(to)) {
+            mailSetting = "設定済み";
+        }
+        mMailSettingValue.setText(mailSetting);
+
+        mMailSendStatusValue.setText(mMailSendStatus);
     }
 
     /**
@@ -138,17 +199,20 @@ public class StartupActivity extends ActionBarActivity {
         String appPassword = prefs.getString(PrefsKey.APP_PASSWORD, "");
         // アプリケーションパスワードが取得できた場合
         if (StringUtil.isNotNullOrEmpty(appPassword)) {
-            // メール設定の設定値を取得する。
-            String userName = prefs.getString(PrefsKey.MAIL_USER_NAME, "");
-            String password = prefs.getString(PrefsKey.MAIL_PASSWORD, "");
-            String from     = prefs.getString(PrefsKey.MAIL_FROM, "");
-            String to       = prefs.getString(PrefsKey.MAIL_TO, "");
-            // 全て設定済みの場合
-            if (StringUtil.isNotNullOrEmpty(userName) &&
-                StringUtil.isNotNullOrEmpty(password) &&
-                StringUtil.isNotNullOrEmpty(from)     &&
-                StringUtil.isNotNullOrEmpty(to)) {
-                mailEnable = true;
+            // ネットワークが有効な場合
+            if (isNetworkEnabled()) {
+                // メール設定の設定値を取得する。
+                String userName = prefs.getString(PrefsKey.MAIL_USER_NAME, "");
+                String password = prefs.getString(PrefsKey.MAIL_PASSWORD, "");
+                String from     = prefs.getString(PrefsKey.MAIL_FROM, "");
+                String to       = prefs.getString(PrefsKey.MAIL_TO, "");
+                // 全て設定済みの場合
+                if (StringUtil.isNotNullOrEmpty(userName) &&
+                    StringUtil.isNotNullOrEmpty(password) &&
+                    StringUtil.isNotNullOrEmpty(from)     &&
+                    StringUtil.isNotNullOrEmpty(to)) {
+                    mailEnable = true;
+                }
             }
 
             // サービスが開始されている場合
@@ -160,6 +224,24 @@ public class StartupActivity extends ActionBarActivity {
         mStartServiceButton.setEnabled(!serviceEnable);
         mStopServiceButton.setEnabled(serviceEnable);
         mConfirmSendMailButton.setEnabled(mailEnable);
+    }
+
+    /**
+     * ネットワークが有効かチェックする。
+     *
+     * @return チェック結果
+     */
+    private boolean isNetworkEnabled() {
+        boolean result = false;
+        ConnectivityManager manager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+        if (null != networkInfo) {
+            if (networkInfo.isConnected()) {
+                result = true;
+            }
+        }
+
+        return result;
     }
 
     /**************************************************************************/
@@ -204,8 +286,8 @@ public class StartupActivity extends ActionBarActivity {
                 // サービスを開始する。
                 ServiceUtil.startService(mContext);
 
-                // サービス状態を設定する。
-                setServiceStatusValue();
+                // 各状態を設定する。
+                setStatusValue();
 
                 // ボタンの有効無効を設定する。
                 enableButton();
@@ -216,8 +298,8 @@ public class StartupActivity extends ActionBarActivity {
                 // サービスを停止する。
                 ServiceUtil.stopService(mContext);
 
-                // サービス状態を設定する。
-                setServiceStatusValue();
+                // 各状態を設定する。
+                setStatusValue();
 
                 // ボタンの有効無効を設定する。
                 enableButton();
@@ -268,6 +350,10 @@ public class StartupActivity extends ActionBarActivity {
                 mProgressDialog.setCancelable(false);
                 mProgressDialog.show(manager, ProgressStatusDialog.class.getSimpleName());
 
+                // カウントダウンタイマーを開始する。
+                mSendMailCountDownTimer = new SendMailCountDownTimer(60 * 1000, 10 * 1000);
+                mSendMailCountDownTimer.start();
+
                 mailData.setText("メール送信テスト");
                 new Thread(new SendMailThread(mailData, new MailTransportListener())).start();
                 break;
@@ -291,11 +377,20 @@ public class StartupActivity extends ActionBarActivity {
         public void messageDelivered(TransportEvent event) {
             mLogger.d("IN");
 
-            Toast.makeText(
-                    StartupActivity.this,
-                    "メール送信成功", Toast.LENGTH_SHORT).show();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(
+                            StartupActivity.this,
+                            "メール送信成功", Toast.LENGTH_SHORT).show();
 
-            mProgressDialog.dismiss();
+                    mProgressDialog.dismiss();
+                    mProgressDialog = null;
+
+                    mMailSendStatus = "メール送信成功";
+                    setStatusValue();
+                }
+            });
 
             mLogger.d("OUT(OK)");
         }
@@ -304,11 +399,20 @@ public class StartupActivity extends ActionBarActivity {
         public void messageNotDelivered(TransportEvent event) {
             mLogger.d("IN");
 
-            Toast.makeText(
-                    StartupActivity.this,
-                    "メール送信失敗", Toast.LENGTH_SHORT).show();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(
+                            StartupActivity.this,
+                            "メール送信失敗", Toast.LENGTH_SHORT).show();
 
-            mProgressDialog.dismiss();
+                    mProgressDialog.dismiss();
+                    mProgressDialog = null;
+
+                    mMailSendStatus = "メール送信失敗";
+                    setStatusValue();
+                }
+            });
 
             mLogger.d("OUT(OK)");
         }
@@ -317,11 +421,89 @@ public class StartupActivity extends ActionBarActivity {
         public void messagePartiallyDelivered(TransportEvent event) {
             mLogger.d("IN");
 
-            Toast.makeText(
-                    StartupActivity.this,
-                    "メール一部送信", Toast.LENGTH_SHORT).show();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(
+                            StartupActivity.this,
+                            "メール一部送信", Toast.LENGTH_SHORT).show();
 
-            mProgressDialog.dismiss();
+                    mProgressDialog.dismiss();
+                    mProgressDialog = null;
+
+                    mMailSendStatus = "メール一部送信";
+                    setStatusValue();
+                }
+            });
+
+            mLogger.d("OUT(OK)");
+        }
+    }
+
+    /**************************************************************************/
+    /**
+     * メール送信カウントダウンタイマークラス
+     *
+     */
+    private class SendMailCountDownTimer extends CountDownTimer {
+
+        /** ロガー */
+        private Logger mLogger = new Logger(SendMailCountDownTimer.class);
+
+        /**
+         * コンストラクタ
+         *
+         * @param millisInFuture カウントダウン時間
+         * @param countDownInterval カウントダウンインターバル
+         */
+        public SendMailCountDownTimer(long millisInFuture, long countDownInterval) {
+            // スーパークラスのコンストラクタを呼び出す。
+            super(millisInFuture, countDownInterval);
+
+            mLogger.d("IN");
+            mLogger.d("OUT(OK)");
+        }
+
+        /**
+         * インターバルごとに呼び出される。
+         *
+         * @param millisUntilFinished カウントダウンするまでの時間
+         */
+        @Override
+        public void onTick(long millisUntilFinished) {
+            mLogger.d("IN");
+
+            // 何もしない。
+
+            mLogger.d("OUT(OK)");
+        }
+
+        /**
+         * カウントダウンした時に呼び出される。
+         */
+        @Override
+        public void onFinish() {
+            mLogger.d("IN");
+
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    // プログレスダイアログが有効な場合
+                    if (null != mProgressDialog) {
+                        // プログレスダイアログを終了する。
+                        mProgressDialog.dismiss();
+                        mProgressDialog = null;
+
+                        // エラーメッセージを表示する。
+                        Toast.makeText(
+                            StartupActivity.this,
+                            "メール送信タイムアウト", Toast.LENGTH_SHORT).show();
+
+                        mMailSendStatus = "メール送信タイムアウト";
+                        setStatusValue();
+                    }
+                }
+            });
 
             mLogger.d("OUT(OK)");
         }

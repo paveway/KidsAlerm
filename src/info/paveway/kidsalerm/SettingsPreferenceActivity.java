@@ -3,6 +3,7 @@ package info.paveway.kidsalerm;
 import info.paveway.kidsalerm.CommonConstants.PrefsKey;
 import info.paveway.kidsalerm.CommonConstants.RequestCode;
 import info.paveway.kidsalerm.dialog.EditDialogPreference;
+import info.paveway.kidsalerm.dialog.StayTimeDialogPreference;
 import info.paveway.log.Logger;
 import info.paveway.util.StringUtil;
 import android.app.Activity;
@@ -14,7 +15,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
@@ -74,7 +74,7 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
     private CheckBoxPreference mNoticeStay;
 
     /** 滞在通知時間 */
-    private EditDialogPreference mNoticeStayTime;
+    private StayTimeDialogPreference mNoticeStayTime;
 
     /** 滞在通知除外場所選択 */
     private PreferenceScreen mExclusionPlace;
@@ -111,7 +111,7 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
         mNoticePowerOn   = (CheckBoxPreference  )findPreference(PrefsKey.NOTICE_POWER_ON);
         mNoticePowerOff  = (CheckBoxPreference  )findPreference(PrefsKey.NOTICE_POWER_OFF);
         mNoticeStay      = (CheckBoxPreference  )findPreference(PrefsKey.NOTICE_STAY);
-        mNoticeStayTime  = (EditDialogPreference)findPreference(PrefsKey.NOTICE_STAY_TIME);
+        mNoticeStayTime  = (StayTimeDialogPreference)findPreference(PrefsKey.NOTICE_STAY_TIME);
         mExclusionPlace  = (PreferenceScreen    )findPreference(PrefsKey.EXCULSION_PLACE);
 
         // アプリケーションパスワードが入力済みの場合
@@ -179,62 +179,128 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         mLogger.d("IN");
 
+        boolean result = false;
+
         // 送信元メールアドレス選択かつ正常終了かつデータがある場合
         if ((RequestCode.PICK_CONTACT_FROM == requestCode) && (RESULT_OK == resultCode) && (null != data)) {
-            // メールアドレスを取得する。
-            String emailAddress = getEmailAddressFrom(data.getData());
-
-            // メールアドレスが取得できた場合
-            if (StringUtil.isNotNullOrEmpty(emailAddress)) {
-                // メールアドレスを保存する。
-                Editor editor = mPrefs.edit();
-                editor.putString(PrefsKey.MAIL_FROM, emailAddress);
-                editor.commit();
-                mMailFrom.setSummary(getResourceString(R.string.summary_prefix) + emailAddress);
-
-                // ビューの表示可否を設定する。
-                enableViews();
-
-            // メールアドレスが取得できない場合
-            } else {
-                Toast.makeText(this, getResourceString(R.string.mail_from_error), Toast.LENGTH_SHORT).show();
-
-                // ビューの表示可否を設定する。
-                enableViews();
-
-                mLogger.d("OUT(NG)");
-                return;
-            }
+            result = pickContactFromResult(data);
 
         // 送信先メールアドレス選択かつ正常終了かつデータがある場合
         } else if ((RequestCode.PICK_CONTACT_TO == requestCode) && (RESULT_OK == resultCode) && (null != data)) {
-            // メールアドレスを取得する。
-            String emailAddress = getEmailAddressTo(data.getData());
-            // メールアドレスが取得できた場合
-            if (StringUtil.isNotNullOrEmpty(emailAddress)) {
-                // メールアドレスを保存する。
-                Editor editor = mPrefs.edit();
-                editor.putString(PrefsKey.MAIL_TO, emailAddress);
-                editor.commit();
-                mMailTo.setSummary(getResourceString(R.string.summary_prefix) + emailAddress);
-
-                // ビューの表示可否を設定する。
-                enableViews();
-            }
+            result = pickContactToResult(data);
 
         // メール設定クリアかつ正常終了の場合
         } else if ((RequestCode.MAIL_CLEAR == requestCode) && (RESULT_OK == resultCode)) {
-            // 設定値をクリアする。
+            result = mailClearResult();
+        }
+
+        if (result) { mLogger.d("OUT(OK)"); } else { mLogger.d("OUT(NG)"); }
+    }
+
+    /**
+     * 送信元メールアドレス選択結果の処理を行う。
+     *
+     * @param data データ
+     * @return 処理結果
+     */
+    private boolean pickContactFromResult(Intent data) {
+        mLogger.d("IN");
+
+        // メールアドレスを取得する。
+        String emailAddress = getEmailAddressFrom(data.getData());
+
+        // メールアドレスが取得できた場合
+        if (StringUtil.isNotNullOrEmpty(emailAddress)) {
+            // メールアドレスを保存する。
             Editor editor = mPrefs.edit();
-            editor.putString(PrefsKey.MAIL_USER_NAME, "");
-            editor.putString(PrefsKey.MAIL_PASSWORD,  "");
-            editor.putString(PrefsKey.MAIL_FROM,      "");
-            editor.putString(PrefsKey.MAIL_TO,        "");
+            editor.putString(PrefsKey.MAIL_FROM, emailAddress);
             editor.commit();
+            mMailFrom.setSummary(getResourceString(R.string.summary_prefix) + emailAddress);
+
+            // ビューの表示可否を設定する。
+            enableViews();
+
+            mLogger.d("OUT(OK)");
+            return true;
+
+        // メールアドレスが取得できない場合
+        } else {
+            Toast.makeText(this, getResourceString(R.string.mail_from_error), Toast.LENGTH_SHORT).show();
+
+            // ビューの表示可否を設定する。
+            enableViews();
+
+            mLogger.d("OUT(NG)");
+            return false;
+        }
+    }
+
+    /**
+     * 送信先メールアドレス選択結果の処理を行う。
+     *
+     * @param data データ
+     * @return 処理結果
+     */
+    private boolean pickContactToResult(Intent data) {
+        mLogger.d("IN");
+
+        // メールアドレスを取得する。
+        String emailAddress = getEmailAddressTo(data.getData());
+        // メールアドレスが取得できた場合
+        if (StringUtil.isNotNullOrEmpty(emailAddress)) {
+            // メールアドレスを保存する。
+            Editor editor = mPrefs.edit();
+            editor.putString(PrefsKey.MAIL_TO, emailAddress);
+            editor.commit();
+            mMailTo.setSummary(getResourceString(R.string.summary_prefix) + emailAddress);
 
             // ビューの表示可否を設定する。
             enableViews();
         }
+
+        mLogger.d("OUT(OK)");
+        return true;
+    }
+
+    /**
+     * メール設定クリア結果の処理を行う。
+     *
+     * @param data データ
+     * @return 処理結果
+     */
+    private boolean mailClearResult() {
+        mLogger.d("IN");
+
+        // 設定値をクリアする。
+        Editor editor = mPrefs.edit();
+        editor.putString(PrefsKey.MAIL_USER_NAME, "");
+        editor.putString(PrefsKey.MAIL_PASSWORD,  "");
+        editor.putString(PrefsKey.MAIL_FROM,      "");
+        editor.putString(PrefsKey.MAIL_TO,        "");
+        editor.commit();
+
+        // ビューの表示可否を設定する。
+        enableViews();
+
+        mLogger.d("OUT(OK)");
+        return true;
+    }
+
+
+    /**
+     * 戻るボタンが押された時に呼び出される。
+     */
+    @Override
+    public void onBackPressed() {
+        mLogger.d("IN");
+
+        // 開始画面を表示する。
+        Intent intent = new Intent(SettingsPreferenceActivity.this, StartupActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+
+        // 終了する。
+        finish();
 
         mLogger.d("OUT(OK)");
     }

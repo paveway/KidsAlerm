@@ -32,10 +32,21 @@ public class SendMailThread implements Runnable {
     /** プロトコル */
     private static final String PROTOCOL = "smtp";
 
+    /**
+     * メールプロパティー値
+     *
+     */
     private class MailPropValue {
+        /** SMTPホスト */
         private static final String SMTP_HOST = "smtp.gmail.com";
-        private static final String SMTP_AUTH = "true";
+
+        /** SMTPポート */
         private static final String SMTP_PORT = "587";
+
+        /** SMTP認証 */
+        private static final String SMTP_AUTH = "true";
+
+        /** SMTP STARTTLS有効 */
         private static final String SMTP_STARTTLS_ENABLE = "true";
     }
 
@@ -77,8 +88,8 @@ public class SendMailThread implements Runnable {
         // セッションプロパティを設定する。
         Properties props = new Properties();
         props.put(MailPropKey.SMTP_HOST,            MailPropValue.SMTP_HOST);
-        props.put(MailPropKey.SMTP_AUTH,            MailPropValue.SMTP_AUTH);
         props.put(MailPropKey.SMTP_PORT,            MailPropValue.SMTP_PORT);
+        props.put(MailPropKey.SMTP_AUTH,            MailPropValue.SMTP_AUTH);
         props.put(MailPropKey.SMTP_STARTTLS_ENABLE, MailPropValue.SMTP_STARTTLS_ENABLE);
 
         // セッション

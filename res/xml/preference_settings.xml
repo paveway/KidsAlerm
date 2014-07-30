@@ -80,7 +80,7 @@
             android:defaultValue="false" />
 
         <!-- 滞在時間 -->
-        <info.paveway.kidsalerm.dialog.EditDialogPreference
+        <info.paveway.kidsalerm.dialog.StayTimeDialogPreference
             android:key="noticeStayTime"
             android:title="@string/notice_stay_time_title"
             android:summary="@string/notice_stay_time_summary"

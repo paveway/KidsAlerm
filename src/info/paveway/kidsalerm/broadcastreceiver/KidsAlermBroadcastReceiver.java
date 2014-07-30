@@ -19,20 +19,22 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.widget.Toast;
 
 /**
- * キッズモニターブロードキャストレシーバークラス
+ * キッズアラーム
+ * ブロードキャストレシーバークラス
  *
  * @version 1.0 新規作成
  * @author paveway.info@gmail.com
  * Copyright (C) 2014 paveway.info. All rights reserved.
  *
  */
-public class KidsMonitorBroadcastReceiver extends BroadcastReceiver {
+public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
 
     /** ロガー */
-    private Logger mLogger = new Logger(KidsMonitorBroadcastReceiver.class);
+    private Logger mLogger = new Logger(KidsAlermBroadcastReceiver.class);
 
     /** 緯度 */
     private String mLatitude;

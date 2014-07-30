@@ -68,12 +68,14 @@
         </activity>
 
         <receiver
-            android:name=".broadcastreceiver.KidsMonitorBroadcastReceiver"
+            android:name=".broadcastreceiver.KidsAlermBroadcastReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
                 <action android:name="android.intent.action.AIRPLANE_MODE" />
+                <action android:name="info.paveway.kidsalerm.LOCATION" />
+                <action android:name="info.paveway.kidsalerm.STAY" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>

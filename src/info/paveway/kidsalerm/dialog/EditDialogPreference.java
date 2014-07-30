@@ -24,7 +24,7 @@ public class EditDialogPreference extends DialogPreference {
     private Logger mLogger = new Logger(EditDialogPreference.class);
 
     /** 入力値 */
-    private EditText mInputValue;
+    protected EditText mInputValue;
 
     /**
      * コンストラクタ
@@ -58,12 +58,11 @@ public class EditDialogPreference extends DialogPreference {
     protected View onCreateDialogView() {
         mLogger.d("IN");
 
-        mInputValue = new EditText(getContext());
-        mInputValue.setInputType(getInputType());
-        mInputValue.setText(getPersistedString("default"));
+        // 入力値を生成する。
+        createInputValue();
 
         mLogger.d("OUT(OK)");
-        return this.mInputValue;
+        return mInputValue;
     }
 
     /**
@@ -73,12 +72,12 @@ public class EditDialogPreference extends DialogPreference {
      */
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        mLogger.d("IN");
+        mLogger.d("IN positiveResult=[" + positiveResult + "]");
 
         // 処理結果が正常の場合
         if (positiveResult) {
             // 入力値を保存する。
-            persistString(mInputValue.getText().toString());
+            persist();
         }
 
         // 呼び出し元画面のビューを可否を設定する。
@@ -91,11 +90,47 @@ public class EditDialogPreference extends DialogPreference {
     }
 
     /**
+     * 入力値を生成する。
+     */
+    protected void createInputValue() {
+        mLogger.d("IN");
+
+        mInputValue = new EditText(getContext());
+        mInputValue.setInputType(getInputType());
+        String defaultValue = getPersistedString("default");
+        mLogger.d("defaultValue=[" + defaultValue + "]");
+        mInputValue.setText(defaultValue);
+
+        mLogger.d("OUT(OK)");
+    }
+
+    /**
      * 入力タイプを返却する。
      *
      * @return 入力タイプ
      */
     protected int getInputType() {
-        return InputType.TYPE_CLASS_TEXT  | InputType.TYPE_TEXT_VARIATION_NORMAL;
+        mLogger.d("IN");
+
+        int inputType = InputType.TYPE_CLASS_TEXT  | InputType.TYPE_TEXT_VARIATION_NORMAL;
+
+        mLogger.d("OUT(OK) result=[" + inputType + "]");
+        return inputType;
+    }
+
+    /**
+     * 入力値を保存する。
+     */
+    protected void persist() {
+        mLogger.d("IN");
+
+        // 入力値を取得する。
+        String inputValue = mInputValue.getText().toString();
+        mLogger.d("inputValue=[" + inputValue + "]");
+
+        // 入力値を保存する。
+        persistString(inputValue);
+
+        mLogger.d("OUT(OK)");
     }
 }

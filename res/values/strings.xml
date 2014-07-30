@@ -52,7 +52,7 @@
     <string name="notice_stay_summary">一ヶ所にある一定時間とどまった場合通知します</string>
 
     <string name="notice_stay_time_title">滞在とみなす時間(分)</string>
-    <string name="notice_stay_time_summary">滞在とみなす時間(1～1339分)を入力してください</string>
+    <string name="notice_stay_time_summary">滞在とみなす時間(10～1440分)を入力してください</string>
     <string name="notice_stay_time_dialogtitle">滞在時間入力</string>
 
     <string name="exclusion_place_title">除外場所選択</string>

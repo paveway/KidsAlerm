@@ -50,14 +50,14 @@ public class KidsAlermService extends Service {
     /** 分 */
     private static final long MINUTE = 60 * SEC;
 
-    /** 更新間隔デフォルト値(30秒) */
-    private static final long DEFAULT_INTERVAL = 30 * SEC;
+    /** 更新間隔デフォルト値(5分) */
+    private static final long DEFAULT_INTERVAL = 5 * MINUTE;
 
     /** カウントダウンタイマーインターバル(5分) */
     private static final long COUNT_DOWN_INTERVAL = 5 * MINUTE;
 
     /** 滞在通知時間(分) */
-    private static final String DEFAULT_STAY_TIME = "60";
+    private static final String DEFAULT_STAY_TIME = "120";
 
     /** 距離の小数点以下桁数(2桁) */
     private static final int DISTANCE_DIGIT = 2;
@@ -123,8 +123,6 @@ public class KidsAlermService extends Service {
         // 接続する。
         mLocationClient.connect();
 
-
-
         mLogger.d("OUT(OK)");
     }
 
@@ -158,7 +156,13 @@ public class KidsAlermService extends Service {
 
         // 滞在通知時間を取得する。
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        long stayTime = Long.parseLong(prefs.getString(PrefsKey.NOTICE_STAY_TIME, DEFAULT_STAY_TIME));
+        String stayTimeStr = prefs.getString(PrefsKey.NOTICE_STAY_TIME, DEFAULT_STAY_TIME);
+        // 未設定の場合
+        if (StringUtil.isNullOrEmpty(stayTimeStr)) {
+            // デフォルト値を設定する。
+            stayTimeStr = DEFAULT_STAY_TIME;
+        }
+        long stayTime = Long.parseLong(stayTimeStr);
 
         // カウントダウンタイマーを開始する。
         mStayCountDownTimer = new StayCountDownTimer(stayTime * MINUTE, COUNT_DOWN_INTERVAL);
@@ -322,23 +326,23 @@ public class KidsAlermService extends Service {
 
             // 前回ロケーションが設定済みの場合
             } else {
-                // 滞在通知除外場所のデータを取得する。
+                // 除外場所のデータを取得する。
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(KidsAlermService.this);
                 String json = prefs.getString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, "");
                 mLogger.d("ExclusionPlaceData(JSON)=[" + json + "]");
 
-                // 滞在通知除外場所のデータがある場合
+                // 除外場所のデータがある場合
                 boolean check = true;
                 if (StringUtil.isNotNullOrEmpty(json)) {
-                    // 滞在通知除外場所マップを取得する。
+                    // 除外場所マップを取得する。
                     Gson gson = new Gson();
                     Type mapType = new TypeToken<Map<String, ExclusionPlaceData>>(){}.getType();
                     Map<String, ExclusionPlaceData> stayExclusionDataMap = gson.fromJson(json, mapType);
 
-                    // 滞在通知除外場所データ数分繰り返す。
+                    // 除外場所データ数分繰り返す。
                     Iterator<String> itr = stayExclusionDataMap.keySet().iterator();
                     while (itr.hasNext()) {
-                        // 滞在通知除外場所からの距離を取得する。
+                        // 除外場所からの距離を取得する。
                         ExclusionPlaceData data = stayExclusionDataMap.get(itr.next());
                         double distance =
                                 MonitorUtil.getDistance(
@@ -347,7 +351,7 @@ public class KidsAlermService extends Service {
                                         DISTANCE_DIGIT);
                         mLogger.d("distance=[" + distance + "]");
 
-                        // 滞在通知除外場所の場合
+                        // 除外範囲の場合
                         if (DISTANCE_IGNORE > distance) {
                             // 滞在通知のチェックは行わない。
                             check = false;
