@@ -91,8 +91,10 @@ public class StayTimeDialogPreference extends EditDialogPreference {
         String inputValue = mInputValue.getText().toString();
         mLogger.d("inputValue=[" + inputValue + "]");
         if (StringUtil.isNullOrEmpty(inputValue)) {
-
+            mInputValue.setText("10");
         }
+
+        super.persist();
 
         mLogger.d("OUT(OK)");
     }

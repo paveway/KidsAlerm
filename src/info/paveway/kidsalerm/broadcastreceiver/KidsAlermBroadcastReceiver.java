@@ -1,9 +1,5 @@
 package info.paveway.kidsalerm.broadcastreceiver;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import info.paveway.kidsalerm.CommonConstants.Action;
 import info.paveway.kidsalerm.CommonConstants.ExtraKey;
 import info.paveway.kidsalerm.CommonConstants.PrefsKey;
@@ -13,13 +9,17 @@ import info.paveway.kidsalerm.mail.SendMailThread;
 import info.paveway.log.Logger;
 import info.paveway.util.ServiceUtil;
 import info.paveway.util.StringUtil;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.widget.Toast;
 
 /**

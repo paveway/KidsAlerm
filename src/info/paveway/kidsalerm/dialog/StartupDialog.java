@@ -110,6 +110,9 @@ public class StartupDialog extends AbstractBaseDialogFragment {
                 // 開始画面を表示する。
                 Intent intent = new Intent(getActivity(), StartupActivity.class);
                 startActivity(intent);
+
+                // 呼び出し元画面を終了する。
+                getActivity().finish();
             }
         }
 

@@ -126,6 +126,9 @@ public class LoginDialog extends AbstractBaseDialogFragment {
             Intent intent = new Intent(getActivity(), StartupActivity.class);
             startActivity(intent);
 
+            // 呼び出し元画面を終了する。
+            getActivity().finish();
+
         // パスワードが異なる場合
         } else {
             // エラーメッセージを表示する。
@@ -142,9 +145,6 @@ public class LoginDialog extends AbstractBaseDialogFragment {
      */
     private void doEndButton() {
         mLogger.d("IN");
-
-        // ダイアログを終了する。
-        dismiss();
 
         // 呼び出し元画面を終了する。
         getActivity().finish();
