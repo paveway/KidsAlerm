@@ -1,6 +1,7 @@
 package info.paveway.kidsalerm.dialog;
 
 import info.paveway.kidsalerm.CommonConstants.ExtraKey;
+import info.paveway.kidsalerm.R;
 import info.paveway.log.Logger;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -58,13 +59,18 @@ public class DetailExclusionPlaceDialog extends AbstractBaseDialogFragment {
         String longitude = (String)getArguments().getString(ExtraKey.LONGITUDE);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("除外場所詳細");
-        builder.setPositiveButton("削除", null);
-        builder.setNegativeButton("キャンセル",  null);
+        builder.setTitle(R.string.detail_exclusion_place_dialog_title);
+        builder.setPositiveButton(R.string.detail_exclusion_place_dialog_positive_button, null);
+        builder.setNegativeButton(R.string.detail_exclusion_place_dialog_negative_button,  null);
         String message =
-                "除外場所名：" + mTitle   + "\n" +
-                "緯度："       + latitude + "\n" +
-                "経度："       + longitude;
+                getResourceString(R.string.detail_exclusion_place_dialog_message1) +
+                mTitle +
+                getResourceString(R.string.detail_exclusion_place_dialog_message4) +
+                getResourceString(R.string.detail_exclusion_place_dialog_message2) +
+                latitude +
+                getResourceString(R.string.detail_exclusion_place_dialog_message4) +
+                getResourceString(R.string.detail_exclusion_place_dialog_message3) +
+                longitude;
         builder.setMessage(message);
         AlertDialog dialog = builder.create();
         dialog.setCanceledOnTouchOutside(false);

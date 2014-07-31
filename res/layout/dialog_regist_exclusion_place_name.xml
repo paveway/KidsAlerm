@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:padding="8dp"
-            android:text="除外場所名" />
+            android:text="@string/exclusion_place_name_label" />
 
         <EditText
             android:id="@+id/exclusionPlaceNameValue"

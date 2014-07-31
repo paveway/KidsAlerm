@@ -15,6 +15,7 @@ import java.util.Map;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -32,17 +33,17 @@ import com.google.gson.reflect.TypeToken;
 
 /**
  * キッズアラーム
- * サービスクラス
+ * ロケーションサービスクラス
  *
  * @version 1.0 新規作成
  * @author paveway.info@gmail.com
  * Copyright (C) 2014 paveway.info. All rights reserved.
  *
  */
-public class KidsAlermService extends Service {
+public class LocationService extends Service {
 
     /** ロガー */
-    private Logger mLogger = new Logger(KidsAlermService.class);
+    private Logger mLogger = new Logger(LocationService.class);
 
     /** 秒 */
     private static final long SEC = 1000;
@@ -64,6 +65,9 @@ public class KidsAlermService extends Service {
 
     /** 滞在としない距離(100m) */
     private static final double DISTANCE_IGNORE = 0.1D;
+
+    /** プリフェレンス */
+    private SharedPreferences mPrefs;
 
     /** ロケーションクライアント */
     private LocationClient mLocationClient;
@@ -102,9 +106,12 @@ public class KidsAlermService extends Service {
     public void onCreate() {
         mLogger.d("IN");
 
+        // プリフェレンスを取得する。
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
         // ロケーションリクエストを生成する。
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        long interval = prefs.getLong(PrefsKey.LOCATION_INTERVAL, DEFAULT_INTERVAL);
+//        long interval = mPrefs.getLong(PrefsKey.LOCATION_INTERVAL, DEFAULT_INTERVAL);
+        long interval = DEFAULT_INTERVAL;
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
         mLocationRequest.setInterval(interval * SEC);
@@ -116,7 +123,7 @@ public class KidsAlermService extends Service {
         // ロケーションクライアントを生成する。
         mLocationClient =
                 new LocationClient(
-                        KidsAlermService.this,
+                        LocationService.this,
                         new LocationConnectionCallbacks(),
                         new LocationOnConnectionFailedListener());
 
@@ -154,21 +161,35 @@ public class KidsAlermService extends Service {
         // 滞在通知カウントダウンタイマーを停止する。
         stopStayCountDownTimer();
 
-        // 滞在通知時間を取得する。
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String stayTimeStr = prefs.getString(PrefsKey.NOTICE_STAY_TIME, DEFAULT_STAY_TIME);
-        // 未設定の場合
-        if (StringUtil.isNullOrEmpty(stayTimeStr)) {
-            // デフォルト値を設定する。
-            stayTimeStr = DEFAULT_STAY_TIME;
-        }
-        long stayTime = Long.parseLong(stayTimeStr);
+        // 滞在時間を取得する。
+        long stayTime = getStayTime();
 
         // カウントダウンタイマーを開始する。
         mStayCountDownTimer = new StayCountDownTimer(stayTime * MINUTE, COUNT_DOWN_INTERVAL);
         mStayCountDownTimer.start();
 
         mLogger.d("OUT(OK)");
+    }
+
+    /**
+     * 滞在時間を取得する。
+     *
+     * @return 滞在時間
+     */
+    private long getStayTime() {
+        mLogger.d("IN");
+
+        // 滞在通知時間を取得する。
+        String stayTimeStr = mPrefs.getString(PrefsKey.NOTICE_STAY_TIME, DEFAULT_STAY_TIME);
+        // 未設定の場合
+        if (StringUtil.isNullOrEmpty(stayTimeStr)) {
+            // デフォルト値を設定する。
+            stayTimeStr = DEFAULT_STAY_TIME;
+        }
+
+        long stayTime = Long.parseLong(stayTimeStr);
+        mLogger.d("OUT(OK) result=[" + stayTime + "]");
+        return stayTime;
     }
 
     /**
@@ -237,8 +258,12 @@ public class KidsAlermService extends Service {
         private void startLocationUpdates() {
             mLogger.d("IN");
 
+            // 接続状態を取得する。
+            boolean isConnected = mLocationClient.isConnected();
+            mLogger.d("isConnected=[" + isConnected + "]");
+
             // 接続済みの場合
-            if (mLocationClient.isConnected()) {
+            if (isConnected) {
                 // ロケーション更新を要求する。
                 mLocationClient.requestLocationUpdates(mLocationRequest, mLocationListener);
             }
@@ -319,78 +344,144 @@ public class KidsAlermService extends Service {
         public void onLocationChanged(Location location) {
             mLogger.d("IN");
 
-            // 前回ロケーションが未設定の場合
-            if (null == mPrevLocation) {
-                // 前回ロケーションを設定する。
-                mPrevLocation = location;
+            // ロケーション情報をブロードキャスト送信する。
+              sendLocationBroadcast(location);
+
+            // 電源ONメール処理を行う。
+              powerOnMail();
 
             // 前回ロケーションが設定済みの場合
-            } else {
-                // 除外場所のデータを取得する。
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(KidsAlermService.this);
-                String json = prefs.getString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, "");
-                mLogger.d("ExclusionPlaceData(JSON)=[" + json + "]");
+            if (null != mPrevLocation) {
+                // 除外場所でないかチェックする。
+                boolean check = isNotExclusionPlace(location);
 
-                // 除外場所のデータがある場合
-                boolean check = true;
-                if (StringUtil.isNotNullOrEmpty(json)) {
-                    // 除外場所マップを取得する。
-                    Gson gson = new Gson();
-                    Type mapType = new TypeToken<Map<String, ExclusionPlaceData>>(){}.getType();
-                    Map<String, ExclusionPlaceData> stayExclusionDataMap = gson.fromJson(json, mapType);
-
-                    // 除外場所データ数分繰り返す。
-                    Iterator<String> itr = stayExclusionDataMap.keySet().iterator();
-                    while (itr.hasNext()) {
-                        // 除外場所からの距離を取得する。
-                        ExclusionPlaceData data = stayExclusionDataMap.get(itr.next());
-                        double distance =
-                                MonitorUtil.getDistance(
-                                        location.getLatitude(), location.getLongitude(),
-                                        Double.parseDouble(data.getLatitude()), Double.parseDouble(data.getLongitude()),
-                                        DISTANCE_DIGIT);
-                        mLogger.d("distance=[" + distance + "]");
-
-                        // 除外範囲の場合
-                        if (DISTANCE_IGNORE > distance) {
-                            // 滞在通知のチェックは行わない。
-                            check = false;
-
-                            // 滞在通知カウントダウンタイマーを再開始する。
-                            restartStayCountDownTimer();
-
-                            // ループを終了する。
-                            break;
-                        }
-                    }
-                }
-
-                // 滞在通知のチェックを行う場合
+                // 除外場所ではない場合
                 if (check) {
-                    // 前回ロケーションからの距離を取得する。
-                    double distance = MonitorUtil.getDistance(mPrevLocation, location, DISTANCE_DIGIT);
-                    mLogger.d("distance=[" + distance + "]");
+                    // 滞在をチェックする。
+                    checkStay(location);
 
-                    // 移動した場合
-                    if (DISTANCE_IGNORE < distance) {
-                        // 滞在通知カウントダウンタイマーを再開始する。
-                        restartStayCountDownTimer();
-                    }
+                // 除外場所の場合
+                } else {
+                    // 滞在通知カウントダウンタイマーを再開始する。
+                    restartStayCountDownTimer();
                 }
-
-                // 前回ロケーションを更新する。
-                mPrevLocation = location;
             }
 
-            // ロケーション情報をブロードキャスト送信する。
+            // 前回ロケーションを更新する。
+            mPrevLocation = location;
+
+            mLogger.d("OUT(OK)");
+        }
+
+        /**
+         * ロケーションブロードキャストを送信する。
+         *
+         * @param location ロケーション
+         */
+        private void sendLocationBroadcast(Location location) {
+            mLogger.d("IN");
+
             Intent intent = new Intent();
             intent.setAction(Action.LOCATION);
-            intent.putExtra(ExtraKey.LATITUDE, location.getLatitude());
+            intent.putExtra(ExtraKey.LATITUDE,  location.getLatitude());
             intent.putExtra(ExtraKey.LONGITUDE, location.getLongitude());
             sendBroadcast(intent);
 
             mLogger.d("OUT(OK)");
         }
+
+        /**
+         * 電源ONメール送信処理
+         */
+        private void powerOnMail() {
+            mLogger.d("IN");
+
+            // 電源ONメールを送信する場合
+            boolean powerOn = mPrefs.getBoolean(PrefsKey.POWER_ON, false);
+            mLogger.d("powerOn=[" + powerOn + "]");
+            if (powerOn) {
+                // 電源ONメール設定をクリアする。
+                Editor editor = mPrefs.edit();
+                editor.putBoolean(PrefsKey.POWER_ON, false);
+                editor.commit();
+
+                // 電源ONメール送信を通知する。
+                Intent intent = new Intent();
+                intent.setAction(Action.POWER_ON_MAIL);
+                sendBroadcast(intent);
+            }
+
+            mLogger.d("OUT(OK)");
+        }
+
+        /**
+         * 滞在をチェックする。
+         *
+         * @param location ロケーション
+         */
+        private void checkStay(Location location) {
+            mLogger.d("IN");
+
+            // 前回ロケーションからの距離を取得する。
+            double distance = MonitorUtil.getDistance(mPrevLocation, location, DISTANCE_DIGIT);
+            mLogger.d("distance=[" + distance + "]");
+
+            // 移動した場合
+            if (DISTANCE_IGNORE < distance) {
+                // 滞在通知カウントダウンタイマーを再開始する。
+                restartStayCountDownTimer();
+            }
+
+            mLogger.d("OUT(OK)");
+        }
+    }
+
+    /**
+     * 除外場所ではないかチェックする。
+     *
+     * @param location ロケーション
+     * @return チェック結果
+     */
+    private boolean isNotExclusionPlace(Location location) {
+        mLogger.d("IN");
+
+        // 除外場所のデータを取得する。
+        String json = mPrefs.getString(PrefsKey.EXCLUSION_PLACE_DATA_MAP, "");
+        mLogger.d("ExclusionPlaceData(JSON)=[" + json + "]");
+
+        // 除外場所のデータがある場合
+        boolean check = true;
+        if (StringUtil.isNotNullOrEmpty(json)) {
+            // 除外場所マップを取得する。
+            Gson gson = new Gson();
+            Type mapType = new TypeToken<Map<String, ExclusionPlaceData>>(){}.getType();
+            Map<String, ExclusionPlaceData> stayExclusionDataMap = gson.fromJson(json, mapType);
+
+            // 除外場所データ数分繰り返す。
+            Iterator<String> itr = stayExclusionDataMap.keySet().iterator();
+            while (itr.hasNext()) {
+                // 除外場所からの距離を取得する。
+                ExclusionPlaceData data = stayExclusionDataMap.get(itr.next());
+                double distance =
+                        MonitorUtil.getDistance(
+                                location.getLatitude(), location.getLongitude(),
+                                Double.parseDouble(data.getLatitude()), Double.parseDouble(data.getLongitude()),
+                                DISTANCE_DIGIT);
+                mLogger.d("distance=[" + distance + "]");
+
+                // 除外範囲の場合
+                if (DISTANCE_IGNORE > distance) {
+                    // 滞在通知のチェックは行わない。
+                    check = false;
+
+                    // ループを終了する。
+                    break;
+                }
+            }
+        }
+
+        mLogger.d("OUT(OK) result=[" + check + "]");
+        return check;
     }
 
     /**************************************************************************/
@@ -413,7 +504,7 @@ public class KidsAlermService extends Service {
             // スーパークラスのコンストラクタを呼び出す。
             super(millisInFuture, countDownInterval);
 
-            mLogger.d("IN");
+            mLogger.d("IN millisInFuture=[" + millisInFuture + "] countDownInterval=[" + countDownInterval + "]");
             mLogger.d("OUT(OK)");
         }
 
@@ -424,7 +515,7 @@ public class KidsAlermService extends Service {
          */
         @Override
         public void onTick(long millisUntilFinished) {
-            mLogger.d("IN");
+            mLogger.d("IN millisUntilFinished=[" + millisUntilFinished + "]");
 
             // 何もしない。
 
@@ -438,13 +529,24 @@ public class KidsAlermService extends Service {
         public void onFinish() {
             mLogger.d("IN");
 
-            // ブロードキャストを送信する。
-            Intent intent = new Intent();
-            intent.setAction(Action.STAY);
+            // 最新のロケーションを取得する。
             Location location = mLocationClient.getLastLocation();
-            intent.putExtra(ExtraKey.LATITUDE,  location.getLatitude());
-            intent.putExtra(ExtraKey.LONGITUDE, location.getLongitude());
-            sendBroadcast(intent);
+            mLogger.d("location=[" + location + "]");
+
+            // ロケーションが取得でき、かつ除外場所ではない場合
+            if ((null != location) && isNotExclusionPlace(location)) {
+                // ブロードキャストを送信する。
+                Intent intent = new Intent();
+                intent.setAction(Action.STAY);
+                intent.putExtra(ExtraKey.LATITUDE,  location.getLatitude());
+                intent.putExtra(ExtraKey.LONGITUDE, location.getLongitude());
+                sendBroadcast(intent);
+
+            // 上記以外
+            } else {
+                // カウントダウンタイマーを再起動する。
+                restartStayCountDownTimer();
+            }
 
             mLogger.d("OUT(OK)");
         }

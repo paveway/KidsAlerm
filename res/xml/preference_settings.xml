@@ -90,7 +90,7 @@
             android:inputType="number"
             android:maxLength="4"
             android:text="120"
-            android:hint="1～1339" />
+            android:hint="1～1440" />
 
         <!-- 除外場所選択 -->
         <PreferenceScreen

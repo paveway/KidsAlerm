@@ -96,9 +96,9 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
 
         // 除外場所名登録ダイアログを生成する。
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("除外場所名登録");
-        builder.setPositiveButton("登録", null);
-        builder.setNegativeButton("キャンセル", null);
+        builder.setTitle(R.string.regist_exclusion_place_name_dialog_title);
+        builder.setPositiveButton(R.string.regist_exclusion_place_name_dialog_positive_button, null);
+        builder.setNegativeButton(R.string.regist_exclusion_place_name_dialog_negative_button, null);
         builder.setView(rootView);
         AlertDialog dialog = builder.create();
         dialog.setCanceledOnTouchOutside(false);
@@ -164,7 +164,7 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
         // 未入力の場合
         if (StringUtil.isNullOrEmpty(exclusionPlaceName)) {
             // エラーメッセージを表示する。
-            toast("未入力です");
+            toast(R.string.regist_exclusion_place_name_error_input);
             mLogger.w("OUT(NG)");
             return;
         }
@@ -172,7 +172,7 @@ public class RegistExclusionPlaceNameDialog extends AbstractBaseDialogFragment {
         // 登録済みの名前の場合
         if (mExclusionPlaceNameList.contains(exclusionPlaceName)) {
             // エラーメッセージを表示する。
-            toast("登録済みです");
+            toast(R.string.regist_exclusion_place_name_error_registed);
             mLogger.w("OUT(NG)");
             return;
         }

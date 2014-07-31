@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="info.paveway.kidsalerm"
     android:versionCode="1"
-    android:versionName="1.0.20140720" >
+    android:versionName="1.0.20140801" >
 
     <uses-sdk
         android:minSdkVersion="11"
@@ -37,6 +37,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
         <activity
             android:name="info.paveway.kidsalerm.MainActivity"
             android:label="@string/app_name" >
@@ -74,13 +75,15 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
                 <action android:name="android.intent.action.AIRPLANE_MODE" />
+                <action android:name="info.paveway.kidsalerm.POWER_ON_MAIL" />
                 <action android:name="info.paveway.kidsalerm.LOCATION" />
                 <action android:name="info.paveway.kidsalerm.STAY" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
 
-        <service android:name=".service.KidsAlermService" />
+        <service android:name=".service.LocationService" />
 
         <activity
             android:name="com.google.android.gms.ads.AdActivity"

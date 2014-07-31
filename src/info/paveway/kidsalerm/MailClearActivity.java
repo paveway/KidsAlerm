@@ -5,9 +5,8 @@ import info.paveway.kidsalerm.dialog.MailClearDialog.OnClearListener;
 import info.paveway.log.Logger;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBarActivity;
 
-public class MailClearActivity extends ActionBarActivity implements OnClearListener {
+public class MailClearActivity extends AbstractBaseActivity implements OnClearListener {
 
     /** ロガー */
     private Logger mLogger = new Logger(StartupActivity.class);

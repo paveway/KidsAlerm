@@ -1,6 +1,7 @@
 package info.paveway.kidsalerm.dialog;
 
 import info.paveway.kidsalerm.CommonConstants.ExtraKey;
+import info.paveway.kidsalerm.R;
 import info.paveway.kidsalerm.SelectExclusionPlaceActivity;
 import info.paveway.log.Logger;
 import android.app.Activity;
@@ -56,10 +57,10 @@ public class DeleteExclusionPlaceDialog extends AbstractBaseDialogFragment {
         mTitle = (String)getArguments().getString(ExtraKey.TITLE);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("除外場所削除確認");
-        builder.setPositiveButton("削除", null);
-        builder.setNegativeButton("キャンセル",  null);
-        String message = mTitle + "を削除しますか";
+        builder.setTitle(R.string.delete_exclusion_place_dialog_title);
+        builder.setPositiveButton(R.string.delete_exclusion_place_dialog_positive_button, null);
+        builder.setNegativeButton(R.string.delete_exclusion_place_dialog_negative_button,  null);
+        String message = mTitle + getResourceString(R.string.delete_exclusion_place_dialog_message);
         builder.setMessage(message);
         AlertDialog dialog = builder.create();
         dialog.setCanceledOnTouchOutside(false);

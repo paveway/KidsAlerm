@@ -2,6 +2,7 @@ package info.paveway.kidsalerm;
 
 import info.paveway.kidsalerm.CommonConstants.LocationInfo;
 import info.paveway.kidsalerm.CommonConstants.PrefsKey;
+import info.paveway.kidsalerm.CommonConstants.TestDeviceId;
 import info.paveway.kidsalerm.dialog.DeleteExclusionPlaceDialog.OnDeleteListener;
 import info.paveway.kidsalerm.dialog.DetailExclusionPlaceDialog;
 import info.paveway.kidsalerm.dialog.RegistExclusionPlaceNameDialog;
@@ -21,9 +22,9 @@ import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBarActivity;
-import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -48,13 +49,13 @@ import com.google.gson.reflect.TypeToken;
  * Copyright (C) 2014 paveway.info. All rights reserved.
  *
  */
-public class SelectExclusionPlaceActivity extends ActionBarActivity implements OnRegistListener, OnDeleteListener {
+public class SelectExclusionPlaceActivity extends AbstractBaseActivity implements OnRegistListener, OnDeleteListener {
 
     /** ロガー */
     private Logger mLogger = new Logger(SelectExclusionPlaceActivity.class);
 
-    /** プリフェレンス */
-    private SharedPreferences mPrefs;
+    /** ADビュー */
+    private AdView mAdView;
 
     /** Googleマップ */
     private GoogleMap mGoogleMap;
@@ -83,8 +84,14 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
         // レイアウトを設定する。
         setContentView(R.layout.activity_map);
 
-        // プリフェレンスを取得する。
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(SelectExclusionPlaceActivity.this);
+        // AdView をリソースとしてルックアップしてリクエストを読み込む
+       mAdView = (AdView)findViewById(R.id.adView);
+       AdRequest adRequest =
+               new AdRequest.Builder()
+                   .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                   .addTestDevice(TestDeviceId.NEXUS7)
+                   .build();
+       mAdView.loadAd(adRequest);
 
         // Google Play servicesが利用できるかチェックする。
         int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -103,10 +110,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         // 終了する。
-                        Toast.makeText(
-                                SelectExclusionPlaceActivity.this,
-                                getResources().getString(R.string.select_exclusion_place_error_google_play_service),
-                                Toast.LENGTH_SHORT).show();
+                        toast(R.string.select_exclusion_place_error_google_play_service);
                         finish();
                         mLogger.w("OUT(NG)");
                     }
@@ -116,10 +120,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
             // リカバリー不可能なエラーの場合
             } else {
                 // 終了する。
-                Toast.makeText(
-                        SelectExclusionPlaceActivity.this,
-                        getResources().getString(R.string.select_exclusion_place_error_google_play_service),
-                        Toast.LENGTH_SHORT).show();
+                toast(R.string.select_exclusion_place_error_google_play_service);
                 finish();
                 mLogger.w("OUT(NG)");
                 return;
@@ -143,13 +144,28 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
         } catch (Exception e) {
             // 終了する。
             mLogger.e("OUT(NG)", e);
-            Toast.makeText(
-                    SelectExclusionPlaceActivity.this,
-                    getResources().getString(R.string.select_exclusion_place_error_map),
-                    Toast.LENGTH_SHORT).show();
+            toast(R.string.select_exclusion_place_error_map);
             finish();
             return;
         }
+    }
+
+    @Override
+    public void onPause() {
+        mAdView.pause();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mAdView.resume();
+    }
+
+    @Override
+    public void onDestroy() {
+        mAdView.destroy();
+        super.onDestroy();
     }
 
     /**************************************************************************/
@@ -363,6 +379,7 @@ public class SelectExclusionPlaceActivity extends ActionBarActivity implements O
         public void onMapClick(LatLng latlng) {
             mLogger.d("IN");
 
+            // 除外場所データマップから除外場所名リストを生成する。
             ArrayList<String> exclusionPlaceNameList = new ArrayList<String>();
             Iterator<String> itr = mExclusionPlaceDataMap.keySet().iterator();
             while (itr.hasNext()) {

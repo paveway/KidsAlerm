@@ -18,7 +18,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Toast;
 
 /**
  * キッズアラーム
@@ -104,7 +103,7 @@ public class StartupDialog extends AbstractBaseDialogFragment {
         if (RequestCode.SETTINGS_PREFERENCE == (requestCode & 0xFFFF)) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
             if (StringUtil.isNullOrEmpty(prefs.getString(PrefsKey.APP_PASSWORD, ""))) {
-                Toast.makeText(getActivity(), "設定画面でアプリケーションパスワードを設定してください", Toast.LENGTH_SHORT).show();
+                toast(R.string.startup_dialog_error_input);
 
             } else {
                 // 開始画面を表示する。

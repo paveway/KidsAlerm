@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.gms.ads.AdView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.gms.ads.AdView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:id="@+id/adView"
     android:theme="@android:style/Theme.Translucent"
@@ -8,5 +9,5 @@
     android:layout_alignParentBottom="true"
     android:layout_centerHorizontal="true"
     ads:adSize="BANNER"
-    ads:adUnitId="ca-app-pub-6984834494761648/7453377415" />
+    ads:adUnitId="ca-app-pub-6984834494761648/9955748215" />
 

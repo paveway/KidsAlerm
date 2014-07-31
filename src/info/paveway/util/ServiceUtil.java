@@ -1,6 +1,6 @@
 package info.paveway.util;
 
-import info.paveway.kidsalerm.service.KidsAlermService;
+import info.paveway.kidsalerm.service.LocationService;
 import info.paveway.log.Logger;
 
 import java.util.List;
@@ -63,9 +63,9 @@ public class ServiceUtil {
         ComponentName name = null;
 
         // 位置取得サービスが停止してる場合
-        if (!ServiceUtil.isServiceRunning(context, KidsAlermService.class)) {
+        if (!ServiceUtil.isServiceRunning(context, LocationService.class)) {
             // 位置取得サービスを開始する。
-            name = context.startService(new Intent(context, KidsAlermService.class));
+            name = context.startService(new Intent(context, LocationService.class));
             mLogger.d("ComponentName=[" + name + "]");
         }
 
@@ -88,7 +88,7 @@ public class ServiceUtil {
         mLogger.d("IN");
 
         // 監視サービスを停止する。
-        boolean result = context.stopService(new Intent(context, KidsAlermService.class));
+        boolean result = context.stopService(new Intent(context, LocationService.class));
 
         mLogger.d("OUT(OK) result=[" + result + "]");
         return result;

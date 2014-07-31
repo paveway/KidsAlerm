@@ -1,6 +1,9 @@
 package info.paveway.kidsalerm.dialog;
 
+import info.paveway.kidsalerm.R;
+import info.paveway.kidsalerm.service.LocationService;
 import info.paveway.log.Logger;
+import info.paveway.util.ServiceUtil;
 import info.paveway.util.StringUtil;
 import android.content.Context;
 import android.text.InputFilter;
@@ -21,6 +24,9 @@ public class StayTimeDialogPreference extends EditDialogPreference {
     /** ロガー */
     private Logger mLogger = new Logger(StayTimeDialogPreference.class);
 
+    /** コンテキスト */
+    private Context mContext;
+
     /**
      * コンストラクタ
      *
@@ -30,6 +36,8 @@ public class StayTimeDialogPreference extends EditDialogPreference {
     public StayTimeDialogPreference(Context context, AttributeSet attrs) {
         // スーパークラスのコンストラクタを呼び出す。
         super(context, attrs);
+
+        mContext = context;
     }
 
     /**
@@ -42,6 +50,32 @@ public class StayTimeDialogPreference extends EditDialogPreference {
     public StayTimeDialogPreference(Context context, AttributeSet attrs, int defStyle) {
         // スーパークラスのコンストラクタを呼び出す。
         super(context, attrs, defStyle);
+
+        mContext = context;
+    }
+
+    /**
+     * ダイアログをクローズした時に呼び出される。
+     *
+     * @param positiveResult 処理結果
+     */
+    @Override
+    protected void onDialogClosed(boolean positiveResult) {
+        mLogger.d("IN positiveResult=[" + positiveResult + "]");
+
+        // スーパークラスのメソッドを呼び出す。
+        super.onDialogClosed(positiveResult);
+
+        // サービスが動作している場合
+        if (ServiceUtil.isServiceRunning(mContext, LocationService.class)) {
+            // サービスを停止する。
+            ServiceUtil.stopService(mContext);
+        }
+
+        // サービスを開始する。
+        ServiceUtil.startService(mContext);
+
+        mLogger.d("OUT(OK)");
     }
 
     /**
@@ -60,7 +94,7 @@ public class StayTimeDialogPreference extends EditDialogPreference {
         mInputValue.setFilters(inputFilter);
 
         // ヒントを設定する。
-        mInputValue.setHint("10～1440");
+        mInputValue.setHint(getContext().getResources().getString(R.string.stay_time_dialog_hint));
 
         mLogger.d("OUT(OK)");
     }
@@ -91,9 +125,10 @@ public class StayTimeDialogPreference extends EditDialogPreference {
         String inputValue = mInputValue.getText().toString();
         mLogger.d("inputValue=[" + inputValue + "]");
         if (StringUtil.isNullOrEmpty(inputValue)) {
-            mInputValue.setText("10");
+            mInputValue.setText(getContext().getResources().getString(R.string.stay_time_dialog_default));
         }
 
+        // スーパークラスのメソッドを呼び出す。
         super.persist();
 
         mLogger.d("OUT(OK)");

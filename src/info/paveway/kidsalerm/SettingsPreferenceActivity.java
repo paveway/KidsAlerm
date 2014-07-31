@@ -40,11 +40,11 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
     /** Gmailアドレス接尾語 */
     private static final String GMAIL_ADDR_SUFFIX = "@gmail.com";
 
-    /** プリフェレンス */
-    private SharedPreferences mPrefs;
-
     /** リソース */
     private Resources mResources;
+
+    /** プリフェレンス */
+    private SharedPreferences mPrefs;
 
     /** アプリケーションパスワード */
     private EditDialogPreference mAppPassword;
@@ -95,11 +95,11 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
         // 設定リソースを追加する。
         addPreferencesFromResource(R.xml.preference_settings);
 
-        // プリフェレンスを取得する。
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(SettingsPreferenceActivity.this);
-
         // リソースを取得する。
         mResources = getResources();
+
+        // プリフェレンスを取得する。
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(SettingsPreferenceActivity.this);
 
         // 各入力項目を取得する。
         mAppPassword     = (EditDialogPreference)findPreference(PrefsKey.APP_PASSWORD);
@@ -153,7 +153,10 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
         String noticeStatyTime = mPrefs.getString(PrefsKey.NOTICE_STAY_TIME, "");
         if (StringUtil.isNotNullOrEmpty(noticeStatyTime)) {
             // サマリーを設定する。
-            mNoticeStayTime.setSummary(getResourceString(R.string.summary_prefix) + noticeStatyTime + "分");
+            mNoticeStayTime.setSummary(
+                    getResourceString(R.string.summary_prefix) +
+                    noticeStatyTime +
+                    getResourceString(R.string.summary_suffix_notice_stay_time));
         }
 
         // クリックリスナーを設定する。
@@ -198,6 +201,34 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
     }
 
     /**
+     * リソース文字列を返却する。
+     *
+     * @param id 文字列のリソースID
+     * @return リソース文字列
+     */
+    protected String getResourceString(int id) {
+        return mResources.getString(id);
+    }
+
+    /**
+     * トースト表示する。
+     *
+     * @param id 文字列リソースID
+     */
+    protected void toast(int id) {
+        toast(getResources().getString(id));
+    }
+
+    /**
+     * トースト表示する。
+     *
+     * @param text 文字列
+     */
+    protected void toast(String text) {
+        Toast.makeText(SettingsPreferenceActivity.this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
      * 送信元メールアドレス選択結果の処理を行う。
      *
      * @param data データ
@@ -225,7 +256,7 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
 
         // メールアドレスが取得できない場合
         } else {
-            Toast.makeText(this, getResourceString(R.string.mail_from_error), Toast.LENGTH_SHORT).show();
+            toast(R.string.mail_from_error);
 
             // ビューの表示可否を設定する。
             enableViews();
@@ -306,16 +337,6 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
     }
 
     /**
-     * リソース文字列を取得する。
-     *
-     * @param id リソース文字列のID
-     * @return リソース文字列
-     */
-    private String getResourceString(int id) {
-        return mResources.getString(id);
-    }
-
-    /**
      * ビューの表示可否を設定する。
      */
     public void enableViews() {
@@ -387,7 +408,10 @@ public class SettingsPreferenceActivity extends PreferenceActivity {
             String noticeStatyTime = mPrefs.getString(PrefsKey.NOTICE_STAY_TIME, "");
             // 滞在通知時間が取得できた場合
             if (StringUtil.isNotNullOrEmpty(noticeStatyTime)) {
-                mNoticeStayTime.setSummary(getResourceString(R.string.summary_prefix) + noticeStatyTime + "分");
+                mNoticeStayTime.setSummary(
+                        getResourceString(R.string.summary_prefix) +
+                        noticeStatyTime +
+                        getResourceString(R.string.summary_suffix_notice_stay_time));
 
             // 滞在通知時間が取得できない場合
             } else {

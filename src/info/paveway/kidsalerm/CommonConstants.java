@@ -11,6 +11,10 @@ package info.paveway.kidsalerm;
  */
 public class CommonConstants {
 
+    public class TestDeviceId {
+        public static final String NEXUS7 = "015d46d92a200e07";
+    }
+
     /**
      * プリフェレンスキー
      *
@@ -69,6 +73,9 @@ public class CommonConstants {
 
         /** 経度 */
         public static final String LONGITUDE = "longitude";
+
+        /** 電源ON */
+        public static final String POWER_ON = "powerOn";
     }
 
     /**
@@ -96,6 +103,9 @@ public class CommonConstants {
     public static class Action {
         /** パッケージ名 */
         private static final String PACKAGE_NAME = CommonConstants.class.getPackage().getName();
+
+        /** 電源ONメール */
+        public static final String POWER_ON_MAIL = PACKAGE_NAME + ".POWER_ON_MAIL";
 
         /** ロケーション */
         public static final String LOCATION = PACKAGE_NAME + ".LOCATION";

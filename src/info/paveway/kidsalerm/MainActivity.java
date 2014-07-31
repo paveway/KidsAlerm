@@ -7,11 +7,8 @@ import info.paveway.kidsalerm.dialog.StartupDialog;
 import info.paveway.log.Logger;
 import info.paveway.util.StringUtil;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBarActivity;
 
 /**
  * キッズアラーム
@@ -22,13 +19,10 @@ import android.support.v7.app.ActionBarActivity;
  * Copyright (C) 2014 paveway.info. All rights reserved.
  *
  */
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AbstractBaseActivity {
 
     /** ロガー */
     private Logger mLogger = new Logger(MainActivity.class);
-
-    /** プリフェレンス */
-    private SharedPreferences mPrefs;
 
     /** 開始ダイアログ */
     private StartupDialog mStartupDialog;
@@ -47,9 +41,6 @@ public class MainActivity extends ActionBarActivity {
 
         // レイアウトを設定する。
         setContentView(R.layout.activity_main);
-
-        // プリフェレンスを取得する。
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 
         // 開始処理を行う。
         start();

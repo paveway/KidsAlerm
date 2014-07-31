@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">お守り君</string>
+    <string name="app_name">キッズアラーム</string>
 
-    <!-- 開始ダイアログ -->
-    <string name="startup_dialog_title">開始</string>
-    <string name="startup_dialog_positive_button">設定画面</string>
-    <string name="startup_dialog_negative_button">終了</string>
-    <string name="startup_dialog_message">初めての方は設定画面でアプリケーションのパスワードを設定してください</string>
+    <!-- 開始画面 -->
+    <string name="service_status_label">通知サービス状態</string>
+    <string name="network_status_label">ネットワーク状態</string>
+    <string name="mail_setting_label">メール設定</string>
+    <string name="mail_send_status_label">メール送信状態</string>
+    <string name="start_service_button">通知サービス開始</string>
+    <string name="stop_service_button">通知サービス停止</string>
+    <string name="confirm_send_mail_button">メール送信確認</string>
+    <string name="settings_preference_button">設定</string>
 
-    <!-- ログインダイアログ -->
-    <string name="login_dialog_title">ログイン</string>
-    <string name="login_dialog_positive_button">ログイン</string>
-    <string name="login_dialog_negative_button">終了</string>
-    <string name="login_dialog_error_input_password">パスワードを入力してください</string>
-    <string name="login_dialog_error_password">パスワードが違います</string>
+    <string name="startup_mail_send_status_default">未確認</string>
+    <string name="startup_mail_send_status_success">メール送信成功</string>
+    <string name="startup_mail_send_status_failed">メール送信失敗</string>
+    <string name="startup_mail_send_status_partially">メール一部送信</string>
+    <string name="startup_mail_send_status_timeout">メール送信タイムアウト</string>
+    <string name="startup_service_status_stop">停止</string>
+    <string name="startup_service_status_start">開始</string>
+    <string name="startup_network_status_disconnect">切断</string>
+    <string name="startup_network_status_connect">接続</string>
+    <string name="startup_mail_setting_init">未設定</string>
+    <string name="startup_mail_setting_done">設定済み</string>
 
     <!-- 設定画面 -->
     <string name="category_title_app">アプリケーション設定</string>
@@ -59,6 +68,7 @@
     <string name="exclusion_place_summary">滞在を除外する場所を選択してください</string>
 
     <string name="summary_prefix">設定済み：</string>
+    <string name="summary_suffix_notice_stay_time">分</string>
     <string name="summary_password">設定済み：●●●●●</string>
     <string name="mail_from_error">Gmailアドレスではありません</string>
 
@@ -66,27 +76,73 @@
     <string name="select_exclusion_place_error_google_play_service">Google Play Serviceが利用できません</string>
     <string name="select_exclusion_place_error_map">マップの初期化ができません</string>
 
+    <!-- 開始ダイアログ -->
+    <string name="startup_dialog_title">開始</string>
+    <string name="startup_dialog_positive_button">設定画面</string>
+    <string name="startup_dialog_negative_button">終了</string>
+    <string name="startup_dialog_message">初めての方は設定画面でアプリケーションのパスワードを設定してください</string>
+    <string name="startup_dialog_error_input">設定画面でアプリケーションパスワードを設定してください</string>
+
+    <!-- ログインダイアログ -->
+    <string name="password_label">パスワード</string>
+    <string name="login_dialog_title">ログイン</string>
+    <string name="login_dialog_positive_button">ログイン</string>
+    <string name="login_dialog_negative_button">終了</string>
+    <string name="login_dialog_error_input_password">パスワードを入力してください</string>
+    <string name="login_dialog_error_password">パスワードが違います</string>
+
+    <!-- 滞在時間入力ダイアログ -->
+    <string name="stay_time_dialog_hint">10～1440</string>
+    <string name="stay_time_dialog_default">120</string>
+
+    <!-- 除外場所登録ダイアログ -->
+    <string name="exclusion_place_name_label">除外場所名</string>
+    <string name="regist_exclusion_place_name_dialog_title">除外場所名登録</string>
+    <string name="regist_exclusion_place_name_dialog_positive_button">登録</string>
+    <string name="regist_exclusion_place_name_dialog_negative_button">除外場所名登録</string>
+    <string name="regist_exclusion_place_name_error_input">未入力です</string>
+    <string name="regist_exclusion_place_name_error_registed">登録済みです</string>
+
+    <!-- 除外場所詳細ダイアログ -->
+    <string name="detail_exclusion_place_dialog_title">除外場所詳細</string>
+    <string name="detail_exclusion_place_dialog_positive_button">削除</string>
+    <string name="detail_exclusion_place_dialog_negative_button">閉じる</string>
+    <string name="detail_exclusion_place_dialog_message1">除外場所：</string>
+    <string name="detail_exclusion_place_dialog_message2">緯度：</string>
+    <string name="detail_exclusion_place_dialog_message3">経度：</string>
+    <string name="detail_exclusion_place_dialog_message4">\n</string>
+
+    <!-- 除外場所削除確認代ログ -->
+    <string name="delete_exclusion_place_dialog_title">除外場所削除確認</string>
+    <string name="delete_exclusion_place_dialog_positive_button">削除</string>
+    <string name="delete_exclusion_place_dialog_negative_button">キャンセル</string>
+    <string name="delete_exclusion_place_dialog_message">を削除しますか</string>
+
     <!-- メール設定クリアダイアログ -->
     <string name="mail_clear_dialog_title">メール設定クリア</string>
     <string name="mail_clear_dialog_positive_button">クリア</string>
     <string name="mail_clear_dialog_negative_button">キャンセル</string>
     <string name="mail_clear_dialog_message">メールの設定をクリアしますか</string>
 
+    <!-- プログレスダイアログ -->
+    <string name="progress_dialog_title_send_mail">メール送信中</string>
+    <string name="progress_dialog_message">しばらくお待ちください</string>
+
     <!-- メール送信関連 -->
     <string name="send_mail_error_data">メール設定に未設定項目があります</string>
-    <string name="send_mail_subject">お守り君</string>
+    <string name="send_mail_subject">キッズアラーム</string>
+    <string name="send_mail_text_test">メール送信テスト</string>
     <string name="send_mail_text_error_service">サービスが起動できませんでした</string>
     <string name="send_mail_text_power_on1">電源がONになりました\n日時:</string>
     <string name="send_mail_text_power_on2">\n緯度:</string>
     <string name="send_mail_text_power_on3">\n経度:</string>
-
     <string name="send_mail_text_power_off1">電源がOFFになりました\n日時:</string>
     <string name="send_mail_text_power_off2">\n緯度:</string>
     <string name="send_mail_text_power_off3">\n経度:</string>
-
     <string name="send_mail_text_stay1">同じ場所に</string>
     <string name="send_mail_text_stay2">分滞在しています\n日時:</string>
     <string name="send_mail_text_stay3">\n緯度:</string>
     <string name="send_mail_text_stay4">\n経度:</string>
+    <string name="send_mail_date_format">yyyy/MM/dd HH:mm:ss.SSS</string>
 
 </resources>
