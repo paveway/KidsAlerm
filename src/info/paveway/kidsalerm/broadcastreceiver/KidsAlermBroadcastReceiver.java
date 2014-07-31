@@ -173,7 +173,7 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
      * @param mailData メールデータ
      */
     private void actionShutdown(Resources resources, SharedPreferences prefs, MailData mailData) {
-        mLogger.d("IN");
+        mLogger.d("IN mLatitude=[" + mLatitude + "] mLongitude=[" + mLongitude + "]");
 
         // 通知対象の場合
         if (prefs.getBoolean(PrefsKey.NOTICE_POWER_OFF, false)) {
@@ -199,7 +199,7 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
      * @param mailData メールデータ
      */
     private void actionPowerOnMail(Resources resources, MailData mailData) {
-        mLogger.d("IN");
+        mLogger.d("IN mLatitude=[" + mLatitude + "] mLongitude=[" + mLongitude + "]");
 
         // メールを送信する。
         StringBuilder text = new StringBuilder();
@@ -224,8 +224,11 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
         mLogger.d("IN");
 
         // 緯度、経度を取得する。
-        mLatitude  = String.valueOf(intent.getDoubleExtra(ExtraKey.LATITUDE,  0));
-        mLongitude = String.valueOf(intent.getDoubleExtra(ExtraKey.LONGITUDE, 0));
+        double latitude = intent.getDoubleExtra(ExtraKey.LATITUDE,  0);
+        double longitude = intent.getDoubleExtra(ExtraKey.LONGITUDE, 0);
+        mLogger.d("latitude=[" + latitude + "] longitude=[" + longitude + "]");
+        mLatitude  = String.valueOf(latitude);
+        mLongitude = String.valueOf(longitude);
 
         mLogger.d("OUT(OK)");
     }
@@ -244,6 +247,7 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
         // 緯度、経度を取得する。
         mLatitude  = String.valueOf(intent.getDoubleExtra(ExtraKey.LATITUDE,  0));
         mLongitude = String.valueOf(intent.getDoubleExtra(ExtraKey.LONGITUDE, 0));
+        mLogger.d("mLatitude=[" + mLatitude + "] mLongitude=[" + mLongitude + "]");
 
         // メールを送信する。
         StringBuilder text = new StringBuilder();

@@ -99,7 +99,7 @@
     <string name="exclusion_place_name_label">除外場所名</string>
     <string name="regist_exclusion_place_name_dialog_title">除外場所名登録</string>
     <string name="regist_exclusion_place_name_dialog_positive_button">登録</string>
-    <string name="regist_exclusion_place_name_dialog_negative_button">除外場所名登録</string>
+    <string name="regist_exclusion_place_name_dialog_negative_button">キャンセル</string>
     <string name="regist_exclusion_place_name_error_input">未入力です</string>
     <string name="regist_exclusion_place_name_error_registed">登録済みです</string>
 
