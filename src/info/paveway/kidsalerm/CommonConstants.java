@@ -76,6 +76,9 @@ public class CommonConstants {
 
         /** 電源ON */
         public static final String POWER_ON = "powerOn";
+
+        /** 更新日時 */
+        public static final String UPDATE = "update";
     }
 
     /**

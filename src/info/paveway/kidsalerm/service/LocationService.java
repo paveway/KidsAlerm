@@ -9,6 +9,7 @@ import info.paveway.util.MonitorUtil;
 import info.paveway.util.StringUtil;
 
 import java.lang.reflect.Type;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -118,7 +119,7 @@ public class LocationService extends Service {
         mLocationRequest.setFastestInterval(DEFAULT_INTERVAL * SEC);
 
         // ロケーションリスナーを生成する。
-        mLocationListener = new UserLocationListener();
+        mLocationListener = new LocationNoticeListener();
 
         // ロケーションクライアントを生成する。
         mLocationClient =
@@ -327,13 +328,13 @@ public class LocationService extends Service {
 
     /**************************************************************************/
     /**
-     * ユーザロケーションリスナークラス
+     * ロケーション通知リスナークラス
      *
      */
-    private class UserLocationListener implements LocationListener {
+    private class LocationNoticeListener implements LocationListener {
 
         /** ロガー */
-        private Logger mLogger = new Logger(UserLocationListener.class);
+        private Logger mLogger = new Logger(LocationNoticeListener.class);
 
         /**
          * ロケーションが変更された時に呼び出される。
@@ -344,11 +345,15 @@ public class LocationService extends Service {
         public void onLocationChanged(Location location) {
             mLogger.d("IN");
 
-            // ロケーション情報をブロードキャスト送信する。
-              sendLocationBroadcast(location);
+            // 更新日時、緯度、経度を保存する。
+            Editor editor = mPrefs.edit();
+            editor.putLong(PrefsKey.UPDATE,      new Date().getTime());
+            editor.putString(PrefsKey.LATITUDE,  String.valueOf(location.getLatitude()));
+            editor.putString(PrefsKey.LONGITUDE, String.valueOf(location.getLongitude()));
+            editor.commit();
 
             // 電源ONメール処理を行う。
-              powerOnMail();
+            powerOnMail();
 
             // 前回ロケーションが設定済みの場合
             if (null != mPrevLocation) {
@@ -373,22 +378,22 @@ public class LocationService extends Service {
             mLogger.d("OUT(OK)");
         }
 
-        /**
-         * ロケーションブロードキャストを送信する。
-         *
-         * @param location ロケーション
-         */
-        private void sendLocationBroadcast(Location location) {
-            mLogger.d("IN");
-
-            Intent intent = new Intent();
-            intent.setAction(Action.LOCATION);
-            intent.putExtra(ExtraKey.LATITUDE,  location.getLatitude());
-            intent.putExtra(ExtraKey.LONGITUDE, location.getLongitude());
-            sendBroadcast(intent);
-
-            mLogger.d("OUT(OK)");
-        }
+//        /**
+//         * ロケーションブロードキャストを送信する。
+//         *
+//         * @param location ロケーション
+//         */
+//        private void sendLocationBroadcast(Location location) {
+//            mLogger.d("IN");
+//
+//            Intent intent = new Intent();
+//            intent.setAction(Action.LOCATION);
+//            intent.putExtra(ExtraKey.LATITUDE,  location.getLatitude());
+//            intent.putExtra(ExtraKey.LONGITUDE, location.getLongitude());
+//            sendBroadcast(intent);
+//
+//            mLogger.d("OUT(OK)");
+//        }
 
         /**
          * 電源ONメール送信処理

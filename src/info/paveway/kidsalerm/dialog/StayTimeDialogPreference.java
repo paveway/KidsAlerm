@@ -6,6 +6,7 @@ import info.paveway.log.Logger;
 import info.paveway.util.ServiceUtil;
 import info.paveway.util.StringUtil;
 import android.content.Context;
+import android.content.res.Resources;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.AttributeSet;
@@ -122,10 +123,32 @@ public class StayTimeDialogPreference extends EditDialogPreference {
     protected void persist() {
         mLogger.d("IN");
 
+        Resources resources = getContext().getResources();
+
         String inputValue = mInputValue.getText().toString();
         mLogger.d("inputValue=[" + inputValue + "]");
         if (StringUtil.isNullOrEmpty(inputValue)) {
-            mInputValue.setText(getContext().getResources().getString(R.string.stay_time_dialog_default));
+            mInputValue.setText(resources.getString(R.string.stay_time_dialog_default));
+
+        } else {
+            long stayTime = -1;
+            try {
+                stayTime = Long.parseLong(inputValue);
+            } catch (Exception e) {
+                mLogger.e(e);
+            }
+
+            if (-1 != stayTime) {
+                String minStr = resources.getString(R.string.stay_time_dialog_min);
+                long min = Long.parseLong(minStr);
+                String maxStr = resources.getString(R.string.stay_time_dialog_max);
+                long max = Long.parseLong(maxStr);
+                if (min > stayTime) {
+                    mInputValue.setText(minStr);
+                } else if (max < stayTime) {
+                    mInputValue.setText(maxStr);
+                }
+            }
         }
 
         // スーパークラスのメソッドを呼び出す。

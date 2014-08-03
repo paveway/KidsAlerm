@@ -84,11 +84,11 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
 
         // 電源ONメールの場合
         } else if (Action.POWER_ON_MAIL.equals(action)) {
-            actionPowerOnMail(resources, mailData);
+            actionPowerOnMail(resources, prefs, mailData);
 
-        // 位置情報の場合
-        } else if (Action.LOCATION.equals(action)) {
-            actionLocation(intent);
+//        // 位置情報の場合
+//        } else if (Action.LOCATION.equals(action)) {
+//            actionLocation(intent);
 
         // 滞在通知の場合
         } else if (Action.STAY.equals(action)) {
@@ -180,11 +180,13 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
             // メールを送信する。
             StringBuilder text = new StringBuilder();
             text.append(resources.getString(R.string.send_mail_text_power_off1));
-            text.append(getTimeString(resources));
+            text.append(getTimeString(resources, new Date().getTime()));
             text.append(resources.getString(R.string.send_mail_text_power_off2));
-            text.append(mLatitude);
+            text.append(getTimeString(resources, prefs.getLong(PrefsKey.UPDATE, 0)));
             text.append(resources.getString(R.string.send_mail_text_power_off3));
-            text.append(mLongitude);
+            text.append(prefs.getString(PrefsKey.LATITUDE, ""));
+            text.append(resources.getString(R.string.send_mail_text_power_off4));
+            text.append(prefs.getString(PrefsKey.LONGITUDE, ""));
             mailData.setText(text.toString());
             sendMail(mailData);
         }
@@ -196,42 +198,45 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
      * 電源ONメール送信の処理を行う。
      *
      * @param resources リソース
+     * @param prefs プリフェレンス
      * @param mailData メールデータ
      */
-    private void actionPowerOnMail(Resources resources, MailData mailData) {
+    private void actionPowerOnMail(Resources resources, SharedPreferences prefs, MailData mailData) {
         mLogger.d("IN mLatitude=[" + mLatitude + "] mLongitude=[" + mLongitude + "]");
 
         // メールを送信する。
         StringBuilder text = new StringBuilder();
         text.append(resources.getString(R.string.send_mail_text_power_on1));
-        text.append(getTimeString(resources));
+        text.append(getTimeString(resources, new Date().getTime()));
         text.append(resources.getString(R.string.send_mail_text_power_on2));
-        text.append(mLatitude);
+        text.append(getTimeString(resources, prefs.getLong(PrefsKey.UPDATE, 0)));
         text.append(resources.getString(R.string.send_mail_text_power_on3));
-        text.append(mLongitude);
+        text.append(prefs.getString(PrefsKey.LATITUDE, ""));
+        text.append(resources.getString(R.string.send_mail_text_power_on4));
+        text.append(prefs.getString(PrefsKey.LONGITUDE, ""));
         mailData.setText(text.toString());
         sendMail(mailData);
 
         mLogger.d("OUT(OK)");
     }
 
-    /**
-     * ロケーションの処理を行う。
-     *
-     * @param intent データ
-     */
-    private void actionLocation(Intent intent) {
-        mLogger.d("IN");
-
-        // 緯度、経度を取得する。
-        double latitude = intent.getDoubleExtra(ExtraKey.LATITUDE,  0);
-        double longitude = intent.getDoubleExtra(ExtraKey.LONGITUDE, 0);
-        mLogger.d("latitude=[" + latitude + "] longitude=[" + longitude + "]");
-        mLatitude  = String.valueOf(latitude);
-        mLongitude = String.valueOf(longitude);
-
-        mLogger.d("OUT(OK)");
-    }
+//    /**
+//     * ロケーションの処理を行う。
+//     *
+//     * @param intent データ
+//     */
+//    private void actionLocation(Intent intent) {
+//        mLogger.d("IN");
+//
+//        // 緯度、経度を取得する。
+//        double latitude = intent.getDoubleExtra(ExtraKey.LATITUDE,  0);
+//        double longitude = intent.getDoubleExtra(ExtraKey.LONGITUDE, 0);
+//        mLogger.d("latitude=[" + latitude + "] longitude=[" + longitude + "]");
+//        mLatitude  = String.valueOf(latitude);
+//        mLongitude = String.valueOf(longitude);
+//
+//        mLogger.d("OUT(OK)");
+//    }
 
     /**
      * 滞在の処理を行う。
@@ -254,7 +259,7 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
         text.append(resources.getString(R.string.send_mail_text_stay1));
         text.append(prefs.getString(PrefsKey.NOTICE_STAY_TIME, ""));
         text.append(resources.getString(R.string.send_mail_text_stay2));
-        text.append(getTimeString(resources));
+        text.append(getTimeString(resources, new Date().getTime()));
         text.append(resources.getString(R.string.send_mail_text_stay3));
         text.append(mLatitude);
         text.append(resources.getString(R.string.send_mail_text_stay4));
@@ -283,11 +288,12 @@ public class KidsAlermBroadcastReceiver extends BroadcastReceiver {
      * 日時文字列を取得する。
      *
      * @param resources リソース
+     * @param update 更新日時
      * @return 日時文字列
      */
-    private String getTimeString(Resources resources) {
+    private String getTimeString(Resources resources, long update) {
         SimpleDateFormat sdf =
                 new SimpleDateFormat(resources.getString(R.string.send_mail_date_format), Locale.getDefault());
-        return sdf.format(new Date());
+        return sdf.format(new Date(update));
     }
 }

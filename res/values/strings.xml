@@ -94,6 +94,8 @@
     <!-- 滞在時間入力ダイアログ -->
     <string name="stay_time_dialog_hint">10～1440</string>
     <string name="stay_time_dialog_default">120</string>
+    <string name="stay_time_dialog_min">10</string>
+    <string name="stay_time_dialog_max">1440</string>
 
     <!-- 除外場所登録ダイアログ -->
     <string name="exclusion_place_name_label">除外場所名</string>
@@ -133,12 +135,14 @@
     <string name="send_mail_subject">キッズアラーム</string>
     <string name="send_mail_text_test">メール送信テスト</string>
     <string name="send_mail_text_error_service">サービスが起動できませんでした</string>
-    <string name="send_mail_text_power_on1">電源がONになりました\n日時:</string>
-    <string name="send_mail_text_power_on2">\n緯度:</string>
-    <string name="send_mail_text_power_on3">\n経度:</string>
-    <string name="send_mail_text_power_off1">電源がOFFになりました\n日時:</string>
-    <string name="send_mail_text_power_off2">\n緯度:</string>
-    <string name="send_mail_text_power_off3">\n経度:</string>
+    <string name="send_mail_text_power_on1">電源がONになりました\n電源ON日時:</string>
+    <string name="send_mail_text_power_on2">\n位置情報取得日時:</string>
+    <string name="send_mail_text_power_on3">\n緯度:</string>
+    <string name="send_mail_text_power_on4">\n経度:</string>
+    <string name="send_mail_text_power_off1">電源がOFFになりました\n電源OFF日時:</string>
+    <string name="send_mail_text_power_off2">\n位置情報取得日時:</string>
+    <string name="send_mail_text_power_off3">\n緯度:</string>
+    <string name="send_mail_text_power_off4">\n経度:</string>
     <string name="send_mail_text_stay1">同じ場所に</string>
     <string name="send_mail_text_stay2">分滞在しています\n日時:</string>
     <string name="send_mail_text_stay3">\n緯度:</string>
